@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>EdlinSoftware.Timeline.Domain</AssemblyName>
+    <RootNamespace>EdlinSoftware.Timeline.Domain</RootNamespace>
+  </PropertyGroup>
+
+</Project>
