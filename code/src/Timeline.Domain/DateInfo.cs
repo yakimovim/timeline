@@ -76,15 +76,17 @@ namespace EdlinSoftware.Timeline.Domain
 
             Debug.Assert(Era == other.Era);
 
-            return Era == Era.AnnoDomini
-                ? CompareDateParts(other)
-                : -CompareDateParts(other);
+            var yearsComparison = Era == Era.AnnoDomini
+                ? CompareNullable(Year, other.Year)
+                : -CompareNullable(Year, other.Year);
+            if (yearsComparison.HasValue) return yearsComparison.Value;
+
+            return CompareDateParts(other);
         }
 
         private int CompareDateParts(DateInfo other)
         {
-            return CompareNullable(Year, other.Year)
-                ?? CompareNullable(Month, other.Month)
+            return CompareNullable(Month, other.Month)
                 ?? CompareNullable(Day, other.Day)
                 ?? CompareNullable(Hour, other.Hour)
                 ?? 0;

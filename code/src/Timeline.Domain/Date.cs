@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
-using System.Numerics;
 
 namespace EdlinSoftware.Timeline.Domain
 {
@@ -10,8 +8,30 @@ namespace EdlinSoftware.Timeline.Domain
     /// Represents some (possible not exact) date.
     /// </summary>
     public abstract class Date
+        : IEquatable<Date>, IComparable<Date>
     {
-        
+        public int CompareTo(Date other)
+        {
+            return GetDateInfo().CompareTo(other.GetDateInfo());
+        }
+
+        public bool Equals(Date other)
+        {
+            return GetDateInfo().Equals(other.GetDateInfo());
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (GetType() != obj.GetType())
+                return false;
+
+            return Equals((Date)obj);
+        }
+
+        protected abstract DateInfo GetDateInfo();
     }
 
     /// <summary>
@@ -24,113 +44,41 @@ namespace EdlinSoftware.Timeline.Domain
 
         public static readonly NowDate Instance = new NowDate();
 
+        public override int GetHashCode() => -1;
+
         public override string ToString() => DateTime.Now.ToString("G");
+
+        protected override DateInfo GetDateInfo()
+        {
+            var now = DateTime.Now;
+
+            return DateInfo.AnnoDomini(now.Year, now.Month, now.Day, now.Hour);
+        }
     }
 
-    public sealed class YearDate : Date
+    /// <summary>
+    /// Represents some specific date.
+    /// </summary>
+    public sealed class SpecificDate : Date
     {
-        public YearDate(BigInteger year, Era era)
+        private readonly DateInfo _dateInfo;
+
+        public SpecificDate(Era era, long year, int? month = null, int? day = null, int? hour = null)
         {
-            if (year < 0)
-                throw new ArgumentOutOfRangeException(nameof(year), "Only non-negative years are allowed");
-            Year = year;
-            Era = era;
+            _dateInfo = new DateInfo(era, year, month, day, hour);
         }
 
-        public BigInteger Year { get; }
-        public Era Era { get; }
+        public override int GetHashCode() => _dateInfo.GetHashCode();
 
-        public override string ToString() => $"{Year} {Era.ToEraString()}";
+        public override string ToString() => _dateInfo.ToString();
+
+        protected override DateInfo GetDateInfo() => _dateInfo;
+
+        public static SpecificDate BeforeChrist(long year, int? month = null, int? day = null, int? hour = null)
+            => new SpecificDate(Era.BeforeChrist, year, month, day, hour);
+
+        public static SpecificDate AnnoDomini(long year, int? month = null, int? day = null, int? hour = null)
+            => new SpecificDate(Era.AnnoDomini, year, month, day, hour);
     }
 
-    public sealed class YearMonthDate : Date
-    {
-        public YearMonthDate(BigInteger year, int month, Era era)
-        {
-            if (year < 0)
-                throw new ArgumentOutOfRangeException(nameof(year), "Only non-negative years are allowed");
-            if (month < 1 || month > 12)
-                throw new ArgumentOutOfRangeException(nameof(month), "Month should be between 1 and 12");
-
-            Year = year;
-            Month = month;
-            Era = era;
-        }
-
-        public BigInteger Year { get; }
-        public int Month { get; }
-        public Era Era { get; }
-
-        public override string ToString() => $"{Year} {CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(Month)} {Era.ToEraString()}";
-    }
-
-    public sealed class YearMonthDayDate : Date
-    {
-        public YearMonthDayDate(BigInteger year, int month, int day, Era era)
-        {
-            if (year < 0)
-                throw new ArgumentOutOfRangeException(nameof(year), "Only non-negative years are allowed");
-            if (month < 1 || month > 12)
-                throw new ArgumentOutOfRangeException(nameof(month), "Month should be between 1 and 12");
-            if (day < 1 || day > 31)
-                throw new ArgumentOutOfRangeException(nameof(day), "Day should be between 1 and 31");
-            if(year < int.MaxValue)
-            {
-                var intYear = (int)year;
-                var date = new DateTime(intYear, month, 1);
-                date = date.AddMonths(1).AddDays(-1);
-                if(day > date.Day)
-                    throw new ArgumentOutOfRangeException(nameof(day), $"Day the {month} month of the {year} year should not be greater than {date.Day}");
-            }
-
-            Year = year;
-            Month = month;
-            Day = day;
-            Era = era;
-        }
-
-        public BigInteger Year { get; }
-        public int Month { get; }
-        public int Day { get; }
-        public Era Era { get; }
-
-        public override string ToString() => $"{Year} {CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(Month)} {Day} {Era.ToEraString()}";
-    }
-
-    public sealed class YearMonthDayHourDate : Date
-    {
-        public YearMonthDayHourDate(BigInteger year, int month, int day, int hour, Era era)
-        {
-            if (year < 0)
-                throw new ArgumentOutOfRangeException(nameof(year), "Only non-negative years are allowed");
-            if (month < 1 || month > 12)
-                throw new ArgumentOutOfRangeException(nameof(month), "Month should be between 1 and 12");
-            if (day < 1 || day > 31)
-                throw new ArgumentOutOfRangeException(nameof(day), "Day should be between 1 and 31");
-            if (year < int.MaxValue)
-            {
-                var intYear = (int)year;
-                var date = new DateTime(intYear, month, 1);
-                date = date.AddMonths(1).AddDays(-1);
-                if (day > date.Day)
-                    throw new ArgumentOutOfRangeException(nameof(day), $"Day the {month} month of the {year} year should not be greater than {date.Day}");
-            }
-            if(hour < 0 || hour > 23)
-                throw new ArgumentOutOfRangeException(nameof(hour), "Hour should be between 0 and 23");
-
-            Year = year;
-            Month = month;
-            Day = day;
-            Hour = hour;
-            Era = era;
-        }
-
-        public BigInteger Year { get; }
-        public int Month { get; }
-        public int Day { get; }
-        public int Hour { get; }
-        public Era Era { get; }
-
-        public override string ToString() => $"{Year} {CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(Month)} {Day} {Era.ToEraString()}";
-    }
 }

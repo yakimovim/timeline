@@ -135,5 +135,67 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             dateInfo.Hour.ShouldBe(2);
         }
 
+        [Fact]
+        public void Compare_dates_in_different_eras()
+        {
+            DateInfo.BeforeChrist(100).ShouldBeLessThan(DateInfo.AnnoDomini(100));
+            DateInfo.BeforeChrist(200).ShouldBeLessThan(DateInfo.AnnoDomini(100));
+        }
+
+        [Fact]
+        public void Compare_dates_with_different_years()
+        {
+            DateInfo.AnnoDomini(100).ShouldBeLessThan(DateInfo.AnnoDomini(200));
+            DateInfo.BeforeChrist(200).ShouldBeLessThan(DateInfo.BeforeChrist(100));
+        }
+
+        [Fact]
+        public void Compare_dates_with_different_years_and_months()
+        {
+            DateInfo.AnnoDomini(100, 2).ShouldBeLessThan(DateInfo.AnnoDomini(100, 3));
+            DateInfo.BeforeChrist(200, 2).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3));
+        }
+
+        [Fact]
+        public void Compare_dates_with_only_years_and_with_years_and_months()
+        {
+            DateInfo.AnnoDomini(100).ShouldBeLessThan(DateInfo.AnnoDomini(100, 1));
+            DateInfo.BeforeChrist(200).ShouldBeLessThan(DateInfo.BeforeChrist(200, 1));
+        }
+
+        [Fact]
+        public void Compare_dates_with_different_years_months_and_days()
+        {
+            DateInfo.AnnoDomini(100, 2, 10).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 15));
+            DateInfo.BeforeChrist(200, 3, 10).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 15));
+        }
+
+        [Fact]
+        public void Compare_dates_with_only_part_of_years_months_and_days()
+        {
+            DateInfo.AnnoDomini(100).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 15));
+            DateInfo.AnnoDomini(100, 2).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 15));
+            DateInfo.BeforeChrist(200).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 15));
+            DateInfo.BeforeChrist(200, 3).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 15));
+        }
+
+        [Fact]
+        public void Compare_dates_with_different_years_months_days_and_hours()
+        {
+            DateInfo.AnnoDomini(100, 2, 10, 3).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 10, 5));
+            DateInfo.BeforeChrist(200, 3, 10, 3).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 10, 5));
+        }
+
+        [Fact]
+        public void Compare_dates_with_only_part_of_years_months_days_and_hours()
+        {
+            DateInfo.AnnoDomini(100).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 10, 5));
+            DateInfo.AnnoDomini(100, 2).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 10, 5));
+            DateInfo.AnnoDomini(100, 2, 10).ShouldBeLessThan(DateInfo.AnnoDomini(100, 2, 10, 5));
+            DateInfo.BeforeChrist(200).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 10, 5));
+            DateInfo.BeforeChrist(200, 3).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 10, 5));
+            DateInfo.BeforeChrist(200, 3, 10).ShouldBeLessThan(DateInfo.BeforeChrist(200, 3, 10, 5));
+        }
+
     }
 }
