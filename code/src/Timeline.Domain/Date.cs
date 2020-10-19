@@ -32,6 +32,45 @@ namespace EdlinSoftware.Timeline.Domain
         }
 
         protected abstract DateInfo GetDateInfo();
+
+        public override int GetHashCode() => GetDateInfo().GetHashCode();
+
+        public static bool operator ==(Date a, Date b)
+        {
+            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+                return true;
+
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+                return false;
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Date a, Date b)
+        {
+            return !(a == b);
+        }
+
+        public static bool operator >(Date a, Date b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        public static bool operator <(Date a, Date b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator >=(Date a, Date b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+        public static bool operator <=(Date a, Date b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
     }
 
     /// <summary>
@@ -67,8 +106,6 @@ namespace EdlinSoftware.Timeline.Domain
         {
             _dateInfo = new DateInfo(era, year, month, day, hour);
         }
-
-        public override int GetHashCode() => _dateInfo.GetHashCode();
 
         public override string ToString() => _dateInfo.ToString();
 

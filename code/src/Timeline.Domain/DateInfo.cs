@@ -202,6 +202,12 @@ namespace EdlinSoftware.Timeline.Domain
             return a.CompareTo(b) <= 0;
         }
 
+        public static Duration operator -(DateInfo a, DateInfo b)
+        {
+            return Duration.GetDurationFromChristBirth(a)
+                - Duration.GetDurationFromChristBirth(b);
+        }
+
         public static DateInfo BeforeChrist(
             long year,
             int? month = null,
