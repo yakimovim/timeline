@@ -35,7 +35,7 @@ namespace EdlinSoftware.Timeline.Domain
         public bool Equals(Duration other)
         {
             return other != null &&
-                   _years == other._years;
+                Math.Abs(_years - other._years) < YearsInHour / 10;
         }
 
         public override int GetHashCode()
