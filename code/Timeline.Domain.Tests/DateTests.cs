@@ -34,5 +34,14 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             SpecificDate.AnnoDomini(2000).ShouldBeLessThan<Date>(NowDate.Instance);
             NowDate.Instance.ShouldBeLessThan<Date>(SpecificDate.AnnoDomini(14000000000L));
         }
+
+        [Fact]
+        public void Duration_between_two_dates()
+        {
+            var d1 = SpecificDate.AnnoDomini(2020);
+            var d2 = SpecificDate.AnnoDomini(2000);
+
+            (d1 - d2).ShouldBe(Duration.Zero.AddYears(20));
+        }
     }
 }

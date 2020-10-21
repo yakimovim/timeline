@@ -18,19 +18,19 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Duration_from_Christ_birth_of_dates_in_our_era()
         {
-            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(100)).ShouldBe(Duration.Zero + 99M);
-            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(15, 3)).ShouldBe(Duration.Zero + 14M + (1M / 12) * 2M);
-            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(1941, 6, 21)).ShouldBe(Duration.Zero + 1940M + (1M / 12) * 5M + (1M / 12 / 31) * 20M);
-            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(1, 7, 5, 13)).ShouldBe(Duration.Zero + 0M + (1M / 12) * 6M + (1M / 12 / 31) * 4M + (1M / 12 / 31 / 24) * 13M);
+            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(100)).ShouldBe(Duration.Zero.AddYears(99));
+            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(15, 3)).ShouldBe(Duration.Zero.AddYears(14).AddMonths(2));
+            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(1941, 6, 21)).ShouldBe(Duration.Zero.AddYears(1940).AddMonths(5).AddDays(20));
+            Duration.GetDurationFromChristBirth(DateInfo.AnnoDomini(1, 7, 5, 13)).ShouldBe(Duration.Zero.AddMonths(6).AddDays(4).AddHours(13));
         }
 
         [Fact]
         public void Duration_from_Christ_birth_of_dates_in_previous_era()
         {
-            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(11)).ShouldBe(Duration.Zero - 11M);
-            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(300, 4)).ShouldBe(Duration.Zero - 300M + (1M / 12) * 3M);
-            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(4000, 9, 10)).ShouldBe(Duration.Zero - 4000M + (1M / 12) * 8M + (1M / 12 / 31) * 9M);
-            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(57, 3, 22, 5)).ShouldBe(Duration.Zero - 57M + (1M / 12) * 2M + (1M / 12 / 31) * 21M + (1M / 12 / 31 / 24) * 5M);
+            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(11)).ShouldBe(Duration.Zero.AddYears(-11));
+            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(300, 4)).ShouldBe(Duration.Zero.AddYears(-300).AddMonths(3));
+            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(4000, 9, 10)).ShouldBe(Duration.Zero.AddYears(-4000).AddMonths(8).AddDays(9));
+            Duration.GetDurationFromChristBirth(DateInfo.BeforeChrist(57, 3, 22, 5)).ShouldBe(Duration.Zero.AddYears(-57).AddMonths(2).AddDays(21).AddHours(5));
         }
 
         [Theory]
@@ -53,8 +53,8 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Duration_comparison()
         {
-            (Duration.Zero + 10M).ShouldBeGreaterThan(Duration.Zero + 9.9M);
-            Duration.Zero.ShouldBeGreaterThan(Duration.Zero - 0.001M);
+            Duration.Zero.AddYears(10).ShouldBeGreaterThan(Duration.Zero.AddYears(9));
+            Duration.Zero.ShouldBeGreaterThan(Duration.Zero.AddDays(-1));
         }
 
         public static IEnumerable<object[]> DurationEqualityData()

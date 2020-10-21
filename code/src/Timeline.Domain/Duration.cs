@@ -50,6 +50,26 @@ namespace EdlinSoftware.Timeline.Domain
 
         public readonly static Duration Zero = new Duration(0);
 
+        public Duration AddYears(long years)
+        {
+            return new Duration(_years + years);
+        }
+
+        public Duration AddMonths(int months)
+        {
+            return new Duration(_years + YearsInMonth * months);
+        }
+
+        public Duration AddDays(int days)
+        {
+            return new Duration(_years + YearsInDay * days);
+        }
+
+        public Duration AddHours(int hours)
+        {
+            return new Duration(_years + YearsInHour * hours);
+        }
+
         public static Duration GetDurationFromChristBirth(DateInfo dateInfo)
         {
             decimal years = 0;
