@@ -3,6 +3,10 @@ using System.Diagnostics;
 
 namespace EdlinSoftware.Timeline.Domain
 {
+    /// <summary>
+    /// Represents some event.
+    /// </summary>
+    /// <typeparam name="TDescription">Type of event description.</typeparam>
     public class Event<TDescription>
     {
         private TDescription _description;
@@ -49,6 +53,25 @@ namespace EdlinSoftware.Timeline.Domain
 
                 _start = value;
             }
+        }
+
+        /// <summary>
+        /// Checks if this event overlaps with another one
+        /// by time.
+        /// </summary>
+        /// <param name="other">Another event.</param>
+        public bool OverlapsWith(Event<TDescription> other)
+        {
+            if (other is null)
+                throw new ArgumentNullException(nameof(other));
+
+            if (End == null && other.End == null)
+                return (Start - other.Start) == Duration.Zero;
+
+            return (Start <= other.Start &&
+                other.Start - Start < Duration)
+                || (other.Start <= Start &&
+                Start - other.Start < other.Duration);
         }
 
         /// <summary>

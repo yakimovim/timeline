@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace EdlinSoftware.Timeline.Domain.Tests
@@ -82,6 +83,243 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             @event.Start.ShouldBe(SpecificDate.AnnoDomini(2000));
             @event.End.ShouldBeNull();
             @event.Duration.ShouldBe(Duration.Zero);
+        }
+
+        [Theory]
+        [MemberData(nameof(EventsOverlappingData))]
+        public void Events_overlapping(
+            Date start1,
+            Date end1,
+            Date start2,
+            Date end2,
+            bool overlaps
+            )
+        {
+            var e1 = new Event<string>(
+                "Event1",
+                start1,
+                end1
+            );
+
+            var e2 = new Event<string>(
+                "Event2",
+                start2,
+                end2
+            );
+
+            e1.OverlapsWith(e2).ShouldBe(overlaps);
+        }
+
+        public static IEnumerable<object[]> EventsOverlappingData()
+        {
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                null,
+                SpecificDate.AnnoDomini(200),
+                null,
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(200),
+                null,
+                SpecificDate.AnnoDomini(100),
+                null,
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                null,
+                SpecificDate.AnnoDomini(100),
+                null,
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                null,
+                SpecificDate.AnnoDomini(100, 1),
+                null,
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                null,
+                SpecificDate.AnnoDomini(200),
+                SpecificDate.AnnoDomini(201),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                null,
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100, 2),
+                null,
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(101),
+                null,
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(102),
+                null,
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(80),
+                null,
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100),
+                null,
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100, 4),
+                null,
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(101),
+                null,
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(105),
+                null,
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(80),
+                SpecificDate.AnnoDomini(81),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(80),
+                SpecificDate.AnnoDomini(100),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(80),
+                SpecificDate.AnnoDomini(100, 4),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(80),
+                SpecificDate.AnnoDomini(105),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(100, 5),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(105),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100, 4),
+                SpecificDate.AnnoDomini(100, 6),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100, 4),
+                SpecificDate.AnnoDomini(101),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(100, 4),
+                SpecificDate.AnnoDomini(105),
+                true
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(105),
+                false
+            };
+            yield return new object[]
+            {
+                SpecificDate.AnnoDomini(100),
+                SpecificDate.AnnoDomini(101),
+                SpecificDate.AnnoDomini(102),
+                SpecificDate.AnnoDomini(105),
+                false
+            };
         }
     }
 }

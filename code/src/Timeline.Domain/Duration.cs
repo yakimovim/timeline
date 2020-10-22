@@ -13,7 +13,7 @@ namespace EdlinSoftware.Timeline.Domain
     /// Hour = 1 / 24 of day
     /// </remarks>
     [DebuggerDisplay("{" + nameof(_years) + "}")]
-    public class Duration : IEquatable<Duration>, IComparable<Duration>
+    public struct Duration : IEquatable<Duration>, IComparable<Duration>
     {
         private readonly static decimal YearsInMonth = 1M / 12;
         private readonly static decimal YearsInDay = YearsInMonth / 31;
@@ -29,7 +29,9 @@ namespace EdlinSoftware.Timeline.Domain
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as Duration);
+            if (!(obj is Duration)) return false;
+
+            return Equals((Duration)obj);
         }
 
         public bool Equals(Duration other)
@@ -74,7 +76,7 @@ namespace EdlinSoftware.Timeline.Domain
         {
             decimal years = 0;
 
-            if(dateInfo.Era == Era.AnnoDomini)
+            if (dateInfo.Era == Era.AnnoDomini)
             {
                 years += dateInfo.Year - 1; // There is no zero year.
             }
