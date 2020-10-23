@@ -25,7 +25,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// <summary>
         /// List of non-overlapping events in the line.
         /// </summary>
-        public List<Event<TDescription>> Events { get; } = new List<Event<TDescription>>();
+        public NonOverlappintEvents<TDescription> Events { get; } = new NonOverlappintEvents<TDescription>();
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// <inheritdoc />
         protected override void SetItem(int index, Event<TDescription> item)
         {
-            if (index < 0 || index >= Count)
+            if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
@@ -56,7 +56,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// <inheritdoc />
         protected override void InsertItem(int index, Event<TDescription> item)
         {
-            if (index < 0 || index >= Count)
+            if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
             if (item == null)
                 throw new ArgumentNullException(nameof(item));

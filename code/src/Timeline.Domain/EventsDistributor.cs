@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EdlinSoftware.Timeline.Domain
 {
@@ -36,7 +34,7 @@ namespace EdlinSoftware.Timeline.Domain
                 .OrderBy(e => e.Start)
                 .ToArray();
 
-            var internalEvents = events
+            var intervalEvents = events
                 .Where(e => e.Duration > _pointEventMaximumDuration)
                 .OrderBy(e => e.Start)
                 .ToArray();
@@ -45,7 +43,7 @@ namespace EdlinSoftware.Timeline.Domain
 
             AddPointEvents(distribution, pointEvents);
 
-            AddIntervalEvents(distribution, internalEvents);
+            AddIntervalEvents(distribution, intervalEvents);
 
             return distribution;
         }
@@ -54,14 +52,72 @@ namespace EdlinSoftware.Timeline.Domain
             EventsDistribution<T> distribution, 
             Event<T>[] pointEvents)
         {
-            throw new NotImplementedException();
+            if (pointEvents.Length == 0) return;
+
+            var eventsLine = new EventsLine<T>();
+
+            while(true)
+            {
+                var @event = pointEvents[0];
+
+                eventsLine.Events.Add(@event);
+
+                pointEvents = pointEvents
+                    .SkipWhile(e => e.Start - @event.Start <= _pointEventMaximumDuration)
+                    .ToArray();
+
+                if (pointEvents.Length == 0) break;
+            }
+
+            distribution.Lines.Add(eventsLine);
         }
 
         private void AddIntervalEvents<T>(
             EventsDistribution<T> distribution, 
-            Event<T>[] internalEvents)
+            Event<T>[] intervalEvents)
         {
-            throw new NotImplementedException();
+            if (intervalEvents.Length == 0) return;
+
+            while(true)
+            {
+                var (restIntervalEvents, eventsLine) =
+                    FillEventsLine(intervalEvents);
+
+                distribution.Lines.Add(eventsLine);
+
+                if (restIntervalEvents.Length == 0) break;
+
+                intervalEvents = restIntervalEvents;
+            }
+        }
+
+        private (Event<T>[] restIntervalEvents, EventsLine<T> eventsLine) FillEventsLine<T>(Event<T>[] intervalEvents)
+        {
+            if (intervalEvents.Length == 0)
+                throw new InvalidOperationException();
+
+            var eventsLine = new EventsLine<T>();
+            var restIntervalEvents = new LinkedList<Event<T>>();
+
+            var @event = intervalEvents[0];
+            eventsLine.Events.Add(@event);
+
+            for (int i = 1; i < intervalEvents.Length; i++)
+            {
+                var currentEvent = intervalEvents[i];
+
+                if(@event.OverlapsWith(currentEvent))
+                {
+                    restIntervalEvents.AddLast(currentEvent);
+                }
+                else
+                {
+                    @event = currentEvent;
+                    eventsLine.Events.Add(@event);
+                }
+            }
+
+            return (restIntervalEvents.ToArray(), eventsLine);
         }
     }
 }
