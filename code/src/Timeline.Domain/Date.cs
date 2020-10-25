@@ -31,7 +31,7 @@ namespace EdlinSoftware.Timeline.Domain
             return Equals((Date)obj);
         }
 
-        protected abstract DateInfo GetDateInfo();
+        protected abstract PartialDateInfo GetDateInfo();
 
         public override int GetHashCode() => GetDateInfo().GetHashCode();
 
@@ -92,11 +92,11 @@ namespace EdlinSoftware.Timeline.Domain
 
         public override string ToString() => DateTime.Now.ToString("G");
 
-        protected override DateInfo GetDateInfo()
+        protected override PartialDateInfo GetDateInfo()
         {
             var now = DateTime.Now;
 
-            return DateInfo.AnnoDomini(now.Year, now.Month, now.Day, now.Hour);
+            return PartialDateInfo.AnnoDomini(now.Year, now.Month, now.Day, now.Hour);
         }
     }
 
@@ -105,16 +105,16 @@ namespace EdlinSoftware.Timeline.Domain
     /// </summary>
     public sealed class SpecificDate : Date
     {
-        private readonly DateInfo _dateInfo;
+        private readonly PartialDateInfo _dateInfo;
 
         public SpecificDate(Era era, long year, int? month = null, int? day = null, int? hour = null)
         {
-            _dateInfo = new DateInfo(era, year, month, day, hour);
+            _dateInfo = new PartialDateInfo(era, year, month, day, hour);
         }
 
         public override string ToString() => _dateInfo.ToString();
 
-        protected override DateInfo GetDateInfo() => _dateInfo;
+        protected override PartialDateInfo GetDateInfo() => _dateInfo;
 
         public static SpecificDate BeforeChrist(long year, int? month = null, int? day = null, int? hour = null)
             => new SpecificDate(Era.BeforeChrist, year, month, day, hour);

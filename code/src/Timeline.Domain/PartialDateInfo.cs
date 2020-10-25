@@ -8,11 +8,11 @@ namespace EdlinSoftware.Timeline.Domain
     /// <summary>
     /// Represents some (possible not exact) date.
     /// </summary>
-    public struct DateInfo
-        : IEquatable<DateInfo>,
-          IComparable<DateInfo>
+    public struct PartialDateInfo
+        : IEquatable<PartialDateInfo>,
+          IComparable<PartialDateInfo>
     {
-        public DateInfo(
+        public PartialDateInfo(
             Era era,
             long year, 
             int? month = null, 
@@ -69,7 +69,7 @@ namespace EdlinSoftware.Timeline.Domain
         public int? Hour { get; }
         public Era Era { get; }
 
-        public int CompareTo(DateInfo other)
+        public int CompareTo(PartialDateInfo other)
         {
             if (Era == Era.BeforeChrist && other.Era == Era.AnnoDomini) return -1;
             if (Era == Era.AnnoDomini && other.Era == Era.BeforeChrist) return 1;
@@ -84,7 +84,7 @@ namespace EdlinSoftware.Timeline.Domain
             return CompareDateParts(other);
         }
 
-        private int CompareDateParts(DateInfo other)
+        private int CompareDateParts(PartialDateInfo other)
         {
             return CompareNullable(Month, other.Month)
                 ?? CompareNullable(Day, other.Day)
@@ -111,12 +111,12 @@ namespace EdlinSoftware.Timeline.Domain
 
         public override bool Equals(object obj)
         {
-            if (!(obj is DateInfo)) return false;
+            if (!(obj is PartialDateInfo)) return false;
 
-            return Equals((DateInfo) obj);
+            return Equals((PartialDateInfo) obj);
         }
 
-        public bool Equals(DateInfo other)
+        public bool Equals(PartialDateInfo other)
         {
             if (Era != other.Era) return false;
             if (Year != other.Year) return false;
@@ -166,7 +166,7 @@ namespace EdlinSoftware.Timeline.Domain
             return builder.ToString();
         }
 
-        public static bool operator ==(DateInfo a, DateInfo b)
+        public static bool operator ==(PartialDateInfo a, PartialDateInfo b)
         {
             if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
                 return true;
@@ -177,49 +177,49 @@ namespace EdlinSoftware.Timeline.Domain
             return a.Equals(b);
         }
 
-        public static bool operator !=(DateInfo a, DateInfo b)
+        public static bool operator !=(PartialDateInfo a, PartialDateInfo b)
         {
             return !(a == b);
         }
 
-        public static bool operator >(DateInfo a, DateInfo b)
+        public static bool operator >(PartialDateInfo a, PartialDateInfo b)
         {
             return a.CompareTo(b) > 0;
         }
 
-        public static bool operator <(DateInfo a, DateInfo b)
+        public static bool operator <(PartialDateInfo a, PartialDateInfo b)
         {
             return a.CompareTo(b) < 0;
         }
 
-        public static bool operator >=(DateInfo a, DateInfo b)
+        public static bool operator >=(PartialDateInfo a, PartialDateInfo b)
         {
             return a.CompareTo(b) >= 0;
         }
 
-        public static bool operator <=(DateInfo a, DateInfo b)
+        public static bool operator <=(PartialDateInfo a, PartialDateInfo b)
         {
             return a.CompareTo(b) <= 0;
         }
 
-        public static Duration operator -(DateInfo a, DateInfo b)
+        public static Duration operator -(PartialDateInfo a, PartialDateInfo b)
         {
             return Duration.GetDurationFromChristBirth(a)
                 - Duration.GetDurationFromChristBirth(b);
         }
 
-        public static DateInfo BeforeChrist(
+        public static PartialDateInfo BeforeChrist(
             long year,
             int? month = null,
             int? day = null,
             int? hour = null)
-            => new DateInfo(Era.BeforeChrist, year, month, day, hour);
+            => new PartialDateInfo(Era.BeforeChrist, year, month, day, hour);
 
-        public static DateInfo AnnoDomini(
+        public static PartialDateInfo AnnoDomini(
             long year,
             int? month = null,
             int? day = null,
             int? hour = null)
-            => new DateInfo(Era.AnnoDomini, year, month, day, hour);
+            => new PartialDateInfo(Era.AnnoDomini, year, month, day, hour);
     }
 }

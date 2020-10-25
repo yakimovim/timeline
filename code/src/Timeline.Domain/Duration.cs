@@ -72,7 +72,7 @@ namespace EdlinSoftware.Timeline.Domain
             return new Duration(_years + YearsInHour * hours);
         }
 
-        public static Duration GetDurationFromChristBirth(DateInfo dateInfo)
+        public static Duration GetDurationFromChristBirth(PartialDateInfo dateInfo)
         {
             decimal years = 0;
 
