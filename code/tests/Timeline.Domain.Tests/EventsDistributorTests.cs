@@ -124,6 +124,80 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             distribution.Lines[0].Events[1].ShouldBeSameAs(e3);
         }
 
+        [Fact]
+        public void Overlapping_interval_events_must_be_separated_to_several_lines()
+        {
+            var e1 = new Event<string>(
+                "1",
+                SpecificDate.AnnoDomini(2020),
+                SpecificDate.AnnoDomini(2022)
+            );
+            var e2 = new Event<string>(
+                "2",
+                SpecificDate.AnnoDomini(2021),
+                SpecificDate.AnnoDomini(2023)
+            );
+            var e3 = new Event<string>(
+                "3",
+                SpecificDate.AnnoDomini(2021),
+                SpecificDate.AnnoDomini(2024)
+            );
+
+            var distribution = Distribute(e1, e2, e3);
+
+            distribution.ShouldNotBeNull();
+
+            distribution.Lines.Count.ShouldBe(3);
+
+            distribution.Lines[0].Events.Count.ShouldBe(1);
+
+            distribution.Lines[0].Events[0].ShouldBeSameAs(e1);
+
+            distribution.Lines[1].Events.Count.ShouldBe(1);
+
+            distribution.Lines[1].Events[0].ShouldBeSameAs(e2);
+
+            distribution.Lines[2].Events.Count.ShouldBe(1);
+
+            distribution.Lines[2].Events[0].ShouldBeSameAs(e3);
+        }
+
+        [Fact]
+        public void Non_overlapping_interval_events_must_be_in_single_line()
+        {
+            var e1 = new Event<string>(
+                "1",
+                SpecificDate.AnnoDomini(2020),
+                SpecificDate.AnnoDomini(2022)
+            );
+            var e2 = new Event<string>(
+                "2",
+                SpecificDate.AnnoDomini(2021),
+                SpecificDate.AnnoDomini(2023)
+            );
+            var e3 = new Event<string>(
+                "3",
+                SpecificDate.AnnoDomini(2023),
+                SpecificDate.AnnoDomini(2025)
+            );
+
+            var distribution = Distribute(e1, e2, e3);
+
+            distribution.ShouldNotBeNull();
+
+            distribution.Lines.Count.ShouldBe(2);
+
+            distribution.Lines[0].Events.Count.ShouldBe(2);
+
+            distribution.Lines[0].Events[0].ShouldBeSameAs(e1);
+
+            distribution.Lines[0].Events[1].ShouldBeSameAs(e3);
+
+            distribution.Lines[1].Events.Count.ShouldBe(1);
+
+            distribution.Lines[1].Events[0].ShouldBeSameAs(e2);
+        }
+
         private EventsDistribution<string> Distribute(params Event<string>[] events)
         {
             return _eventsDistributor.Distribute(events);

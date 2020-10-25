@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Timeline.Domain\Timeline.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Timeline.Domain\Timeline.Domain.csproj" />
   </ItemGroup>
 
 </Project>
