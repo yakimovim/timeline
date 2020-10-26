@@ -165,6 +165,16 @@ namespace EdlinSoftware.Timeline.Domain
                 - Duration.GetDurationFromChristBirth(b);
         }
 
+        public static ExactDateInfo operator -(ExactDateInfo a, Duration d)
+        {
+            return (Duration.GetDurationFromChristBirth(a) - d).GetDateAfterChristBirth();
+        }
+
+        public static ExactDateInfo operator +(ExactDateInfo a, Duration d)
+        {
+            return (Duration.GetDurationFromChristBirth(a) + d).GetDateAfterChristBirth();
+        }
+
         public static ExactDateInfo BeforeChrist(
             long year,
             int month,

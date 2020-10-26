@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace EdlinSoftware.Timeline.Domain.Tests
@@ -113,6 +114,64 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         {
             ExactDateInfo.AnnoDomini(100, 2, 10, 3).ShouldBeLessThan(ExactDateInfo.AnnoDomini(100, 2, 10, 5));
             ExactDateInfo.BeforeChrist(200, 3, 10, 3).ShouldBeLessThan(ExactDateInfo.BeforeChrist(200, 3, 10, 5));
+        }
+
+        [Theory]
+        [MemberData(nameof(SubtractDurationFromDateData))]
+        public void Subtract_duration_from_date(ExactDateInfo date, Duration duration, ExactDateInfo expectedResult)
+        {
+            (date - duration).ShouldBe(expectedResult);
+        }
+
+        [Theory]
+        [MemberData(nameof(AddDurationToDateData))]
+        public void Add_duration_to_date(ExactDateInfo date, Duration duration, ExactDateInfo expectedResult)
+        {
+            (date + duration).ShouldBe(expectedResult);
+        }
+
+        public static IEnumerable<object[]> SubtractDurationFromDateData()
+        {
+            yield return new object[]
+            {
+                ExactDateInfo.AnnoDomini(100, 1, 1, 0),
+                Duration.Zero.AddYears(50),
+                ExactDateInfo.AnnoDomini(50, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                ExactDateInfo.AnnoDomini(25, 1, 1, 0),
+                Duration.Zero.AddYears(50),
+                ExactDateInfo.BeforeChrist(26, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                ExactDateInfo.AnnoDomini(10, 1, 1, 0),
+                Duration.Zero.AddYears(-50),
+                ExactDateInfo.AnnoDomini(60, 1, 1, 0)
+            };
+        }
+
+        public static IEnumerable<object[]> AddDurationToDateData()
+        {
+            yield return new object[]
+            {
+                ExactDateInfo.AnnoDomini(100, 1, 1, 0),
+                Duration.Zero.AddYears(50),
+                ExactDateInfo.AnnoDomini(150, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                ExactDateInfo.BeforeChrist(26, 1, 1, 0),
+                Duration.Zero.AddYears(50),
+                ExactDateInfo.AnnoDomini(25, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                ExactDateInfo.AnnoDomini(10, 1, 1, 0),
+                Duration.Zero.AddYears(-50),
+                ExactDateInfo.BeforeChrist(41, 1, 1, 0)
+            };
         }
     }
 }
