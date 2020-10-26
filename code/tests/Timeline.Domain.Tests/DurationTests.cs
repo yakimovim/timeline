@@ -100,5 +100,81 @@ namespace EdlinSoftware.Timeline.Domain.Tests
                 false
             };
         }
+
+        [Theory]
+        [MemberData(nameof(DurationToDateData))]
+        public void Convert_duration_to_date_after_Christ_birth(
+            Duration duration, ExactDateInfo date
+            )
+        {
+            duration.GetDateAfterChristBirth().ShouldBe(date);
+        }
+
+        public static IEnumerable<object[]> DurationToDateData()
+        {
+            yield return new object[]
+            {
+                Duration.Zero,
+                ExactDateInfo.AnnoDomini(1, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddYears(5),
+                ExactDateInfo.AnnoDomini(6, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddMonths(3),
+                ExactDateInfo.AnnoDomini(1, 4, 1, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddDays(13),
+                ExactDateInfo.AnnoDomini(1, 1, 14, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddHours(20),
+                ExactDateInfo.AnnoDomini(1, 1, 1, 20)
+            };
+            yield return new object[]
+            {
+                Duration.Zero
+                    .AddYears(1000000 - 1)
+                    .AddMonths(12 - 1)
+                    .AddDays(31 - 1)
+                    .AddHours(23),
+                ExactDateInfo.AnnoDomini(1000000, 12, 31, 23)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddYears(-1),
+                ExactDateInfo.BeforeChrist(1, 1, 1, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddYears(-5).AddMonths(4),
+                ExactDateInfo.BeforeChrist(5, 5, 1, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddYears(-5).AddDays(12),
+                ExactDateInfo.BeforeChrist(5, 1, 13, 0)
+            };
+            yield return new object[]
+            {
+                Duration.Zero.AddYears(-5).AddHours(21),
+                ExactDateInfo.BeforeChrist(5, 1, 1, 21)
+            };
+            yield return new object[]
+            {
+                Duration.Zero
+                    .AddYears(-5000000)
+                    .AddMonths(12 - 1)
+                    .AddDays(31 - 1)
+                    .AddHours(23),
+                ExactDateInfo.BeforeChrist(5000000, 12, 31, 23)
+            };
+        }
     }
 }

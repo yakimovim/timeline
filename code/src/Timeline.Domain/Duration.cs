@@ -72,6 +72,57 @@ namespace EdlinSoftware.Timeline.Domain
             return new Duration(_years + YearsInHour * hours);
         }
 
+        /// <summary>
+        /// Gets date corresponding to this duration
+        /// after Christ birth.
+        /// </summary>
+        public ExactDateInfo GetDateAfterChristBirth()
+        {
+            var duration = _years;
+
+            var era = duration >= 0
+                ? Era.AnnoDomini
+                : Era.BeforeChrist;
+
+            if (era == Era.AnnoDomini)
+            {
+                var years = Convert.ToInt64(Math.Floor(duration));
+
+                duration -= years;
+
+                var months = Convert.ToInt32(Math.Floor(duration / YearsInMonth));
+
+                duration -= YearsInMonth * months;
+
+                var days = Convert.ToInt32(Math.Floor(duration / YearsInDay));
+
+                duration -= YearsInDay * days;
+
+                var hours = Convert.ToInt32(Math.Floor(duration / YearsInHour));
+
+                return ExactDateInfo.AnnoDomini(years + 1, months + 1, days + 1, hours);
+            }
+            else
+            {
+                var years = Convert.ToInt64(Math.Floor(duration));
+
+                duration -= years;
+
+                var months = Convert.ToInt32(Math.Floor(duration / YearsInMonth));
+
+                duration -= YearsInMonth * months;
+
+                var days = Convert.ToInt32(Math.Floor(duration / YearsInDay));
+
+                duration -= YearsInDay * days;
+
+                var hours = Convert.ToInt32(Math.Floor(duration / YearsInHour));
+
+                return ExactDateInfo.BeforeChrist(-years, months + 1, days + 1, hours);
+            }
+        }
+
+
         public static Duration GetDurationFromChristBirth(PartialDateInfo dateInfo)
         {
             decimal years = 0;
@@ -121,6 +172,16 @@ namespace EdlinSoftware.Timeline.Domain
         public static Duration operator +(Duration a, decimal b)
         {
             return new Duration(a._years + b);
+        }
+
+        public static Duration operator /(Duration a, decimal b)
+        {
+            return new Duration(a._years / b);
+        }
+
+        public static Duration operator *(Duration a, decimal b)
+        {
+            return new Duration(a._years * b);
         }
 
         public static bool operator ==(Duration a, Duration b)
