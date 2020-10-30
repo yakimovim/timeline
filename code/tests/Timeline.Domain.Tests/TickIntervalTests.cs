@@ -321,9 +321,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
 
         private TickInterval GetFirstTickIntervalWithGreaterDuration(Duration duration)
         {
-            return TickIntervals
-                .GetValidTickIntervals()
-                .First(i => i.Duration >= duration);
+            return TickIntervals.GetFirstTickIntervalWithGreaterDuration(duration);
         }
     }
 }

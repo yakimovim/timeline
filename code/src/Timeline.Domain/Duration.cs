@@ -213,6 +213,11 @@ namespace EdlinSoftware.Timeline.Domain
             return new Duration(Convert.ToInt64(a._hours / b));
         }
 
+        public static decimal operator /(Duration a, Duration b)
+        {
+            return ((decimal)a._hours) / ((decimal)b._hours);
+        }
+
         public static Duration operator *(Duration a, decimal b)
         {
             return new Duration(Convert.ToInt64(a._hours * b));

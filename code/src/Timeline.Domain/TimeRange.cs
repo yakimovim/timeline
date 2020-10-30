@@ -23,5 +23,62 @@ namespace EdlinSoftware.Timeline.Domain
         /// End of the range.
         /// </summary>
         public ExactDateInfo End { get; }
+
+        /// <summary>
+        /// Middle of the range.
+        /// </summary>
+        public ExactDateInfo Middle
+            => Start + (End - Start) / 2;
+
+        /// <summary>
+        /// Duration of the range.
+        /// </summary>
+        public Duration Duration => End - Start;
+
+        /// <summary>
+        /// Moves this time range by given duration.
+        /// </summary>
+        /// <param name="duration">Duration to move by.</param>
+        public TimeRange Move(Duration duration)
+        {
+            return new TimeRange(
+                Start + duration,
+                End + duration
+            );
+        }
+
+        /// <summary>
+        /// Scales this range up.
+        /// </summary>
+        /// <param name="minimumDurationBetweenTicks">Minimum allowed duration between two ticks.</param>
+        public TimeRange ScaleUp(Duration minimumDurationBetweenTicks)
+        {
+            var currentTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(minimumDurationBetweenTicks);
+
+            var newTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(currentTickInterval.Duration.AddHours(1));
+
+            var ratio = newTickInterval.Duration / currentTickInterval.Duration;
+
+            var newRangeDuration = Duration * ratio;
+
+            return new TimeRange(Middle - (newRangeDuration / 2), Middle + (newRangeDuration / 2));
+        }
+
+        /// <summary>
+        /// Scales this range down.
+        /// </summary>
+        /// <param name="minimumDurationBetweenTicks">Minimum allowed duration between two ticks.</param>
+        public TimeRange ScaleDown(Duration minimumDurationBetweenTicks)
+        {
+            var currentTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(minimumDurationBetweenTicks);
+
+            var newTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(currentTickInterval.Duration.AddHours(-1));
+
+            var ratio = newTickInterval.Duration / currentTickInterval.Duration;
+
+            var newRangeDuration = Duration * ratio;
+
+            return new TimeRange(Middle - (newRangeDuration / 2), Middle + (newRangeDuration / 2));
+        }
     }
 }

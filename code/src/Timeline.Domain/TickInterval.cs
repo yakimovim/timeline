@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace EdlinSoftware.Timeline.Domain
@@ -56,7 +57,13 @@ namespace EdlinSoftware.Timeline.Domain
     /// </summary>
     public static class TickIntervals
     {
-        public static IEnumerable<TickInterval> GetValidTickIntervals()
+        public static TickInterval GetFirstTickIntervalWithGreaterDuration(Duration duration)
+        {
+            return GetValidTickIntervals()
+                .First(i => i.Duration >= duration);
+        }
+
+        private static IEnumerable<TickInterval> GetValidTickIntervals()
         {
             yield return new TickInterval(Duration.Zero.AddHours(1), OneHourFirstTickDate, HoursTickName);
             yield return new TickInterval(Duration.Zero.AddHours(12), TwelveHoursFirstTickDate, HoursTickName);
