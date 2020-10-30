@@ -12,19 +12,19 @@ namespace EdlinSoftware.Timeline.Domain
     /// Day = 1 / 31 of month
     /// Hour = 1 / 24 of day
     /// </remarks>
-    [DebuggerDisplay("{" + nameof(_years) + "}")]
+    [DebuggerDisplay("{" + nameof(_hours) + "}")]
     public struct Duration : IEquatable<Duration>, IComparable<Duration>
     {
-        private readonly static decimal YearsInMonth = 1M / 12;
-        private readonly static decimal YearsInDay = YearsInMonth / 31;
-        private readonly static decimal YearsInHour = YearsInDay / 24;
+        private readonly static long HoursInDay = 24L;
+        private readonly static long HoursInMonth = HoursInDay * 31;
+        private readonly static long HoursInYear = HoursInMonth * 12;
 
-        private readonly decimal _years;
+        private readonly long _hours;
 
         [DebuggerStepThrough]
-        private Duration(decimal years)
+        private Duration(long hours)
         {
-            _years = years;
+            _hours = hours;
         }
 
         public override bool Equals(object obj)
@@ -37,39 +37,39 @@ namespace EdlinSoftware.Timeline.Domain
         public bool Equals(Duration other)
         {
             return other != null &&
-                Math.Abs(_years - other._years) < YearsInHour / 10;
+                _hours == other._hours;
         }
 
         public override int GetHashCode()
         {
-            return -894432144 + _years.GetHashCode();
+            return -894432144 + _hours.GetHashCode();
         }
 
         public int CompareTo(Duration other)
         {
-            return _years.CompareTo(other._years);
+            return _hours.CompareTo(other._hours);
         }
 
         public readonly static Duration Zero = new Duration(0);
 
         public Duration AddYears(long years)
         {
-            return new Duration(_years + years);
+            return new Duration(_hours + HoursInYear * years);
         }
 
         public Duration AddMonths(int months)
         {
-            return new Duration(_years + YearsInMonth * months);
+            return new Duration(_hours + HoursInMonth * months);
         }
 
         public Duration AddDays(int days)
         {
-            return new Duration(_years + YearsInDay * days);
+            return new Duration(_hours + HoursInDay * days);
         }
 
         public Duration AddHours(int hours)
         {
-            return new Duration(_years + YearsInHour * hours);
+            return new Duration(_hours + hours);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// </summary>
         public ExactDateInfo GetDateAfterChristBirth()
         {
-            var duration = _years;
+            var duration = _hours;
 
             var era = duration >= 0
                 ? Era.AnnoDomini
@@ -86,102 +86,136 @@ namespace EdlinSoftware.Timeline.Domain
 
             if (era == Era.AnnoDomini)
             {
-                var years = Convert.ToInt64(Math.Floor(duration));
+                var years = duration / HoursInYear;
 
-                duration -= years;
+                duration -= HoursInYear * years;
 
-                var months = Convert.ToInt32(Math.Floor(duration / YearsInMonth));
+                years = years + 1;
 
-                duration -= YearsInMonth * months;
+                var months = Convert.ToInt32(duration / HoursInMonth);
 
-                var days = Convert.ToInt32(Math.Floor(duration / YearsInDay));
+                duration -= HoursInMonth * months;
 
-                duration -= YearsInDay * days;
+                months = months + 1;
 
-                var hours = Convert.ToInt32(Math.Floor(duration / YearsInHour));
+                var days = Convert.ToInt32(duration / HoursInDay);
 
-                return ExactDateInfo.AnnoDomini(years + 1, months + 1, days + 1, hours);
+                duration -= HoursInDay * days;
+
+                days = days + 1;
+
+                FixDate(ref years, ref months, ref days);
+
+                var hours = Convert.ToInt32(duration);
+
+                return ExactDateInfo.AnnoDomini(years, months, days, hours);
             }
             else
             {
-                var years = Convert.ToInt64(Math.Floor(duration));
+                var years = duration / HoursInYear;
 
-                duration -= years;
+                if(duration != years * HoursInYear)
+                {
+                    years -= 1;
+                }
 
-                var months = Convert.ToInt32(Math.Floor(duration / YearsInMonth));
+                duration -= HoursInYear * years;
 
-                duration -= YearsInMonth * months;
+                years = -years;
 
-                var days = Convert.ToInt32(Math.Floor(duration / YearsInDay));
+                var months = Convert.ToInt32(duration / HoursInMonth);
 
-                duration -= YearsInDay * days;
+                duration -= HoursInMonth * months;
 
-                var hours = Convert.ToInt32(Math.Floor(duration / YearsInHour));
+                months = months + 1;
 
-                return ExactDateInfo.BeforeChrist(-years, months + 1, days + 1, hours);
+                var days = Convert.ToInt32(duration / HoursInDay);
+
+                duration -= HoursInDay * days;
+
+                days = days + 1;
+
+                var hours = Convert.ToInt32(duration);
+
+                return ExactDateInfo.BeforeChrist(years, months, days, hours);
             }
         }
 
+        private void FixDate(ref long years, ref int months, ref int days)
+        {
+            if (years >= 9998) return; // see DateTime constructor documentation: https://docs.microsoft.com/en-us/dotnet/api/system.datetime.-ctor?view=netcore-3.1#System_DateTime__ctor_System_Int32_System_Int32_System_Int32_
+
+            var date = new DateTime((int)years, months, 1);
+            date = date.AddMonths(1).AddDays(-1);
+
+            if(date.Day < days)
+            {
+                date = date.AddDays(days - date.Day);
+                years = date.Year;
+                months = date.Month;
+                days = date.Day;
+            }
+        }
 
         public static Duration GetDurationFromChristBirth(PartialDateInfo dateInfo)
         {
-            decimal years = 0;
+            long hours = 0;
 
             if (dateInfo.Era == Era.AnnoDomini)
             {
-                years += dateInfo.Year - 1; // There is no zero year.
+                hours += HoursInYear * (dateInfo.Year - 1); // There is no zero year.
             }
             else
             {
-                years = -dateInfo.Year;
+                hours = HoursInYear * (-dateInfo.Year);
             }
 
             if (dateInfo.Month.HasValue)
             {
-                years += YearsInMonth * (dateInfo.Month.Value - 1);
+                hours += HoursInMonth * (dateInfo.Month.Value - 1);
 
                 if (dateInfo.Day.HasValue)
                 {
-                    years += YearsInDay * (dateInfo.Day.Value - 1);
+                    hours += HoursInDay * (dateInfo.Day.Value - 1);
 
                     if (dateInfo.Hour.HasValue)
                     {
-                        years += YearsInHour * dateInfo.Hour.Value;
+                        hours += dateInfo.Hour.Value;
                     }
                 }
             }
 
-            return new Duration(years);
+            return new Duration(hours);
         }
 
         public static Duration operator -(Duration a, Duration b)
         {
-            return new Duration(a._years - b._years);
+            return new Duration(a._hours - b._hours);
         }
 
         public static Duration operator +(Duration a, Duration b)
         {
-            return new Duration(a._years + b._years);
+            return new Duration(a._hours + b._hours);
         }
 
-        public static Duration operator -(Duration a, decimal b)
+        public static Duration operator -(Duration a, long hours)
         {
-            return new Duration(a._years - b);
+            return new Duration(a._hours - hours);
         }
 
-        public static Duration operator +(Duration a, decimal b)
+        public static Duration operator +(Duration a, long hours)
         {
-            return new Duration(a._years + b);
+            return new Duration(a._hours + hours);
         }
 
         public static Duration operator /(Duration a, decimal b)
         {
-            return new Duration(a._years / b);
+            return new Duration(Convert.ToInt64(a._hours / b));
         }
 
         public static Duration operator *(Duration a, decimal b)
         {
-            return new Duration(a._years * b);
+            return new Duration(Convert.ToInt64(a._hours * b));
         }
 
         public static bool operator ==(Duration a, Duration b)

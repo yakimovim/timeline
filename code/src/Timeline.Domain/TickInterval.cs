@@ -11,29 +11,33 @@ namespace EdlinSoftware.Timeline.Domain
     /// </summary>
     public class TickInterval
     {
-        private readonly Duration _duration;
         private readonly Func<ExactDateInfo, ExactDateInfo> _firstTickDateProvider;
         private readonly Func<ExactDateInfo, string> _nameProvider;
+        private readonly Func<ExactDateInfo, ExactDateInfo> _nextTickDateProvider;
 
         public TickInterval(
             Duration duration,
             Func<ExactDateInfo, ExactDateInfo> firstTickDateProvider,
-            Func<ExactDateInfo, string> nameProvider)
+            Func<ExactDateInfo, string> nameProvider,
+            Func<ExactDateInfo, ExactDateInfo> nextTickDateProvider = null)
         {
             if (duration <= Duration.Zero)
                 throw new ArgumentOutOfRangeException(nameof(duration), "Duration of tick interval must be positive.");
-            _duration = duration;
+            Duration = duration;
             _firstTickDateProvider = firstTickDateProvider ?? throw new ArgumentNullException(nameof(firstTickDateProvider));
             _nameProvider = nameProvider ?? throw new ArgumentNullException(nameof(nameProvider));
+            _nextTickDateProvider = nextTickDateProvider ?? (date => date + Duration);
         }
+
+        public Duration Duration { get; }
 
         public IReadOnlyList<Tick> GetTicksBetween(ExactDateInfo start, ExactDateInfo end)
         {
             var ticks = new List<Tick>();
 
             for (var tickDate = _firstTickDateProvider(start);
-                tickDate < end;
-                tickDate += _duration)
+                tickDate <= end;
+                tickDate = _nextTickDateProvider(tickDate))
             {
                 ticks.Add(
                     new Tick(
@@ -64,7 +68,14 @@ namespace EdlinSoftware.Timeline.Domain
 
             while (true)
             {
-                yield return new TickInterval(Duration.Zero.AddYears(1), YearsFirstTickDate(years), YearsTickName);
+                var tickDuration = Duration.Zero.AddYears(years);
+
+                yield return new TickInterval(
+                    tickDuration,
+                    YearsFirstTickDate(years),
+                    YearsTickName,
+                    NextTickDateForYears(tickDuration)
+                );
                 years *= 10;
             }
         }
@@ -158,21 +169,21 @@ namespace EdlinSoftware.Timeline.Domain
             return date;
         }
 
-        private static Func<ExactDateInfo, ExactDateInfo> YearsFirstTickDate(long years)
+        private static Func<ExactDateInfo, ExactDateInfo> YearsFirstTickDate(long yearsPeriod)
         {
             return start =>
             {
-                var year = start.Year / years;
+                var periodsInYear = start.Year / yearsPeriod;
 
                 var date = new ExactDateInfo(
                     start.Era,
-                    year,
+                    periodsInYear * yearsPeriod,
                     1,
                     1,
                     0
                 );
 
-                if (date < start) date += Duration.Zero.AddYears(years);
+                if (date < start) date += Duration.Zero.AddYears(yearsPeriod);
 
                 return date;
             };
@@ -184,6 +195,24 @@ namespace EdlinSoftware.Timeline.Domain
             builder.Append(date.Year);
             builder.Append(" " + date.Era.ToEraString());
             return builder.ToString();
+        }
+
+        private static Func<ExactDateInfo, ExactDateInfo> NextTickDateForYears(
+            Duration tickDuration)
+        {
+            var oneYear = Duration.Zero.AddYears(1);
+            var eraStart = ExactDateInfo.AnnoDomini(1, 1, 1, 0);
+
+            return prevTickDate =>
+            {
+                if (tickDuration > oneYear
+                    && prevTickDate == eraStart)
+                {
+                    return prevTickDate + tickDuration - oneYear;
+                }
+
+                return prevTickDate + tickDuration;
+            };
         }
     }
 }

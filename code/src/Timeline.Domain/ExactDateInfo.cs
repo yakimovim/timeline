@@ -25,7 +25,7 @@ namespace EdlinSoftware.Timeline.Domain
                 throw new ArgumentOutOfRangeException(nameof(month), "Month should be between 1 and 12");
             if (day < 1 || day > 31)
                 throw new ArgumentOutOfRangeException(nameof(day), "Day should be between 1 and 31");
-            if (year < 9998) // see DateTime constructor documentation: https://docs.microsoft.com/en-us/dotnet/api/system.datetime.-ctor?view=netcore-3.1#System_DateTime__ctor_System_Int32_System_Int32_System_Int32_
+            if (era == Era.AnnoDomini && year < 9998) // see DateTime constructor documentation: https://docs.microsoft.com/en-us/dotnet/api/system.datetime.-ctor?view=netcore-3.1#System_DateTime__ctor_System_Int32_System_Int32_System_Int32_
             {
                 var intYear = (int)year;
                 var date = new DateTime(intYear, month, 1);

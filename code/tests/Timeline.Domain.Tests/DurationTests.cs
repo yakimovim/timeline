@@ -175,6 +175,15 @@ namespace EdlinSoftware.Timeline.Domain.Tests
                     .AddHours(23),
                 ExactDateInfo.BeforeChrist(5000000, 12, 31, 23)
             };
+            yield return new object[]
+            {
+                Duration.Zero
+                    .AddYears(1979)
+                    .AddMonths(1)
+                    .AddDays(29)
+                    .AddHours(1),
+                ExactDateInfo.AnnoDomini(1980, 3, 1, 1)
+            };
         }
     }
 }
