@@ -63,6 +63,26 @@ namespace EdlinSoftware.Timeline.Domain
                 .First(i => i.Duration >= duration);
         }
 
+        public static TickInterval GetLastTickIntervalWithLessDuration(Duration duration)
+        {
+            TickInterval last = null;
+
+            foreach (var tickInterval in GetValidTickIntervals())
+            {
+                if(last == null)
+                {
+                    last = tickInterval;
+                }
+
+                if (tickInterval.Duration >= duration)
+                    return last;
+
+                last = tickInterval;
+            }
+
+            throw new InvalidOperationException();
+        }
+
         private static IEnumerable<TickInterval> GetValidTickIntervals()
         {
             yield return new TickInterval(Duration.Zero.AddHours(1), OneHourFirstTickDate, HoursTickName);

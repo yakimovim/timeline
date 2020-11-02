@@ -72,7 +72,7 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var currentTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(minimumDurationBetweenTicks);
 
-            var newTickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(currentTickInterval.Duration.AddHours(-1));
+            var newTickInterval = TickIntervals.GetLastTickIntervalWithLessDuration(currentTickInterval.Duration.AddHours(-1));
 
             var ratio = newTickInterval.Duration / currentTickInterval.Duration;
 
