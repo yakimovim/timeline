@@ -48,6 +48,24 @@ namespace EdlinSoftware.Timeline.Domain
         }
 
         /// <summary>
+        /// Changes start of the time range.
+        /// </summary>
+        /// <param name="start">New start date.</param>
+        public TimeRange SetStart(ExactDateInfo start)
+        {
+            return new TimeRange(start, End);
+        }
+
+        /// <summary>
+        /// Changes end of the time range.
+        /// </summary>
+        /// <param name="end">New end date.</param>
+        public TimeRange SetEnd(ExactDateInfo end)
+        {
+            return new TimeRange(Start, end);
+        }
+
+        /// <summary>
         /// Scales this range up.
         /// </summary>
         /// <param name="minimumDurationBetweenTicks">Minimum allowed duration between two ticks.</param>
