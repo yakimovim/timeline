@@ -48,10 +48,7 @@ namespace EdlinSoftware.Timeline.Domain
             [DebuggerStepThrough]
             private set
             {
-                if(value == null)
-                    throw new ArgumentNullException(nameof(value), "Event start can't be null.");
-
-                _start = value;
+                _start = value ?? throw new ArgumentNullException(nameof(value), "Event start can't be null.");
             }
         }
 

@@ -208,17 +208,17 @@ namespace EdlinSoftware.Timeline.Domain
             return new Duration(a._hours + hours);
         }
 
-        public static Duration operator /(Duration a, decimal b)
+        public static Duration operator /(Duration a, double b)
         {
             return new Duration(Convert.ToInt64(a._hours / b));
         }
 
-        public static decimal operator /(Duration a, Duration b)
+        public static double operator /(Duration a, Duration b)
         {
-            return ((decimal)a._hours) / ((decimal)b._hours);
+            return ((double)a._hours) / (b._hours);
         }
 
-        public static Duration operator *(Duration a, decimal b)
+        public static Duration operator *(Duration a, double b)
         {
             return new Duration(Convert.ToInt64(a._hours * b));
         }

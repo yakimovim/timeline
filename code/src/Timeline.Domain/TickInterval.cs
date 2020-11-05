@@ -114,7 +114,13 @@ namespace EdlinSoftware.Timeline.Domain
 
         private static string HoursTickName(ExactDateInfo date)
         {
-            return date.ToString();
+            var builder = new StringBuilder();
+            builder.Append(date.Year);
+            builder.Append(" " + date.Era.ToEraString());
+            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
+            builder.Append(" " + date.Day);
+            builder.AppendLine(date.Hour + ":00");
+            return builder.ToString();
         }
 
         private static ExactDateInfo TwelveHoursFirstTickDate(ExactDateInfo start)
@@ -151,9 +157,9 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var builder = new StringBuilder();
             builder.Append(date.Year);
-            builder.Append(" " + CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
-            builder.Append(" " + date.Day);
             builder.Append(" " + date.Era.ToEraString());
+            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
+            builder.Append(" " + date.Day);
             return builder.ToString();
         }
 
@@ -176,8 +182,8 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var builder = new StringBuilder();
             builder.Append(date.Year);
-            builder.Append(" " + CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
             builder.Append(" " + date.Era.ToEraString());
+            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
             return builder.ToString();
         }
 
@@ -204,7 +210,7 @@ namespace EdlinSoftware.Timeline.Domain
 
                 var date = new ExactDateInfo(
                     start.Era,
-                    periodsInYear * yearsPeriod,
+                    Math.Max(1, periodsInYear) * yearsPeriod,
                     1,
                     1,
                     0

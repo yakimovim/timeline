@@ -54,7 +54,7 @@ namespace EdlinSoftware.Timeline.Domain
         {
             if (pointEvents.Length == 0) return;
 
-            var eventsLine = new EventsLine<T>();
+            var eventsLine = new EventsLine<T>(true);
 
             while(true)
             {
@@ -96,7 +96,7 @@ namespace EdlinSoftware.Timeline.Domain
             if (intervalEvents.Length == 0)
                 throw new InvalidOperationException();
 
-            var eventsLine = new EventsLine<T>();
+            var eventsLine = new EventsLine<T>(false);
             var restIntervalEvents = new LinkedList<Event<T>>();
 
             var @event = intervalEvents[0];

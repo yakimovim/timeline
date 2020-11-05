@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19C6050D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Timeline.Domain.Tests", "tests\Timeline.Domain.Tests\Timeline.Domain.Tests.csproj", "{172D1526-222C-4A49-804F-22187AE40D5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Wpf", "Timeline.Wpf\Timeline.Wpf.csproj", "{9336F321-CD0C-48FE-91E6-9832D03058DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{172D1526-222C-4A49-804F-22187AE40D5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{172D1526-222C-4A49-804F-22187AE40D5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{172D1526-222C-4A49-804F-22187AE40D5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9336F321-CD0C-48FE-91E6-9832D03058DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9336F321-CD0C-48FE-91E6-9832D03058DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9336F321-CD0C-48FE-91E6-9832D03058DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9336F321-CD0C-48FE-91E6-9832D03058DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

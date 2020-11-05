@@ -120,12 +120,6 @@ namespace EdlinSoftware.Timeline.Domain
 
         public static bool operator ==(ExactDateInfo a, ExactDateInfo b)
         {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
-                return true;
-
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-                return false;
-
             return a.Equals(b);
         }
 
@@ -157,6 +151,11 @@ namespace EdlinSoftware.Timeline.Domain
         public static implicit operator PartialDateInfo(ExactDateInfo d)
         {
             return new PartialDateInfo(d.Era, d.Year, d.Month, d.Day, d.Hour);
+        }
+
+        public static implicit operator Date(ExactDateInfo d)
+        {
+            return new SpecificDate(d.Era, d.Year, d.Month, d.Day, d.Hour);
         }
 
         public static Duration operator -(ExactDateInfo a, ExactDateInfo b)

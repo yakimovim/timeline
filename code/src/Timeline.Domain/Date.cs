@@ -37,10 +37,10 @@ namespace EdlinSoftware.Timeline.Domain
 
         public static bool operator ==(Date a, Date b)
         {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+            if (a is null && b is null)
                 return true;
 
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            if (a is null || b is null)
                 return false;
 
             return a.Equals(b);

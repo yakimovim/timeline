@@ -23,6 +23,16 @@ namespace EdlinSoftware.Timeline.Domain
     public sealed class EventsLine<TDescription>
     {
         /// <summary>
+        /// Is this line contain point (non-inverval) events.
+        /// </summary>
+        public bool IsPointEvents { get; }
+
+        public EventsLine(bool isPointEvents)
+        {
+            IsPointEvents = isPointEvents;
+        }
+
+        /// <summary>
         /// List of non-overlapping events in the line.
         /// </summary>
         public NonOverlappintEvents<TDescription> Events { get; } = new NonOverlappintEvents<TDescription>();
