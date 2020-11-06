@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -103,6 +104,8 @@ namespace Timeline.Wpf
 
             var timeLineLength = canvasWidth - FingerWidthInUnits;
 
+            var timeLineStart = HalfFingerWidthInUnits;
+
             var minimumDuration = (_timeRange.Duration / timeLineLength) * FingerWidthInUnits;
 
             var tickInterval = TickIntervals.GetFirstTickIntervalWithGreaterDuration(minimumDuration);
@@ -111,13 +114,13 @@ namespace Timeline.Wpf
 
             foreach (var tick in ticks)
             {
-                var tickXPos = ((tick.Date - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
+                var tickXPos = timeLineStart + ((tick.Date - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
 
                 var tickLine = new Line();
 
-                tickLine.X1 = tickXPos + HalfFingerWidthInUnits;
+                tickLine.X1 = tickXPos;
                 tickLine.Y1 = yPos;
-                tickLine.X2 = tickXPos + HalfFingerWidthInUnits;
+                tickLine.X2 = tickXPos;
                 tickLine.Y2 = yPos + 4;
 
                 tickLine.Fill = Brushes.Black;
@@ -144,7 +147,7 @@ namespace Timeline.Wpf
                 );
 
                 label.Content = labelText;
-                label.SetValue(Canvas.LeftProperty, tickXPos + HalfFingerWidthInUnits - (formattedText.Width / 2));
+                label.SetValue(Canvas.LeftProperty, tickXPos - (formattedText.Width / 2));
                 label.SetValue(Canvas.TopProperty, yPos + 4);
 
                 canvas.Children.Add(label);
@@ -190,16 +193,18 @@ namespace Timeline.Wpf
 
             var timeLineLength = canvasWidth - FingerWidthInUnits;
 
+            var timeLineStart = HalfFingerWidthInUnits;
+
             foreach (var @event in events)
             {
                 var eventXPos = ((@event.Start - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
 
                 var circle = new Ellipse();
 
-                circle.Width = FingerWidthInUnits - 2;
-                circle.Height = FingerWidthInUnits - 2;
+                circle.Width = 20;
+                circle.Height = 20;
 
-                circle.SetValue(Canvas.LeftProperty, eventXPos - HalfFingerWidthInUnits + 1);
+                circle.SetValue(Canvas.LeftProperty, timeLineStart + eventXPos - circle.Width / 2);
                 circle.SetValue(Canvas.TopProperty, yPos + 1);
 
                 circle.Fill = Brushes.Black;
@@ -208,6 +213,7 @@ namespace Timeline.Wpf
                 circle.MouseDown += (sender, e) =>
                 {
                     MessageBox.Show(@event.Description);
+                    e.Handled = true;
                 };
 
                 canvas.Children.Add(circle);
@@ -220,10 +226,12 @@ namespace Timeline.Wpf
 
             var timeLineLength = canvasWidth - FingerWidthInUnits;
 
+            var timeLineStart = HalfFingerWidthInUnits;
+
             foreach (var @event in events)
             {
-                var eventStartXPos = ((@event.Start - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
-                var eventEndXPos = ((@event.End - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
+                var eventStartXPos = timeLineStart + ((@event.Start - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
+                var eventEndXPos = timeLineStart + ((@event.End - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
 
                 var rectangle = new Rectangle();
 
@@ -234,10 +242,12 @@ namespace Timeline.Wpf
                 rectangle.SetValue(Canvas.TopProperty, yPos + 1);
 
                 rectangle.Stroke = Brushes.Black;
+                rectangle.Fill = Brushes.White;
 
                 rectangle.MouseDown += (sender, e) =>
                 {
                     MessageBox.Show(@event.Description);
+                    e.Handled = true;
                 };
 
                 canvas.Children.Add(rectangle);
@@ -256,6 +266,65 @@ namespace Timeline.Wpf
             _timeRange = _timeRange.SetEnd(ToExactDateInfo(endPicker.SelectedDate.Value));
 
             DrawEvents();
+        }
+
+        private void OnScaleTimeLine(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            var canvasWidth = canvas.ActualWidth;
+
+            var timeLineLength = canvasWidth - FingerWidthInUnits;
+
+            var minimumDuration = (_timeRange.Duration / timeLineLength) * FingerWidthInUnits;
+
+            if (e.Delta > 0)
+            {
+                _timeRange = _timeRange.ScaleUp(minimumDuration);
+            }
+            else if(e.Delta < 0)
+            {
+                _timeRange = _timeRange.ScaleDown(minimumDuration);
+            }
+
+            if(e.Delta != 0)
+            {
+                DrawEvents();
+            }
+
+            e.Handled = true;
+        }
+
+        private void OnMouseDownOnCanvas(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var position = Mouse.GetPosition(canvas);
+
+            DragDrop.DoDragDrop(
+                canvas, 
+                position, 
+                DragDropEffects.Move
+            );
+        }
+
+        private void OnDropOnCanvas(object sender, DragEventArgs e)
+        {
+            if (e.OriginalSource != canvas) return;
+
+            var currentPosition = e.GetPosition(canvas);
+
+            var prevPosition = (Point)e.Data.GetData(typeof(Point));
+
+            var deltaInUnits = prevPosition.X - currentPosition.X;
+
+            var canvasWidth = canvas.ActualWidth;
+
+            var timeLineLength = canvasWidth - FingerWidthInUnits;
+
+            var deltaDuration = (_timeRange.Duration / timeLineLength) * deltaInUnits;
+
+            _timeRange = _timeRange.Move(deltaDuration);
+
+            DrawEvents();
+
+            e.Handled = true;
         }
     }
 }

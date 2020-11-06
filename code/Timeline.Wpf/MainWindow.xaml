@@ -21,7 +21,12 @@
             <DatePicker x:Name="endPicker" SelectedDateChanged="EndDateChanged" />
         </StackPanel>
         <Canvas x:Name="canvas" Grid.Row="2"
+                Background="White"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                SizeChanged="CanvasSizeChanged"/>
+                SizeChanged="CanvasSizeChanged"
+                MouseWheel="OnScaleTimeLine"
+                MouseDown="OnMouseDownOnCanvas"
+                AllowDrop="True"
+                Drop="OnDropOnCanvas"/>
     </Grid>
 </Window>
