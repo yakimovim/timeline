@@ -116,10 +116,10 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var builder = new StringBuilder();
             builder.Append(date.Year);
-            builder.Append(" " + date.Era.ToEraString());
-            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
-            builder.Append(" " + date.Day);
-            builder.AppendLine(date.Hour + ":00");
+            builder.AppendLine(" " + date.Era.ToEraString());
+            builder.Append(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
+            builder.AppendLine(" " + date.Day);
+            builder.Append(date.Hour + ":00");
             return builder.ToString();
         }
 
@@ -157,8 +157,8 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var builder = new StringBuilder();
             builder.Append(date.Year);
-            builder.Append(" " + date.Era.ToEraString());
-            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
+            builder.AppendLine(" " + date.Era.ToEraString());
+            builder.Append(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
             builder.Append(" " + date.Day);
             return builder.ToString();
         }
@@ -182,8 +182,8 @@ namespace EdlinSoftware.Timeline.Domain
         {
             var builder = new StringBuilder();
             builder.Append(date.Year);
-            builder.Append(" " + date.Era.ToEraString());
-            builder.AppendLine(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
+            builder.AppendLine(" " + date.Era.ToEraString());
+            builder.Append(CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(date.Month));
             return builder.ToString();
         }
 

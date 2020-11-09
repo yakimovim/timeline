@@ -1,7 +1,9 @@
 ﻿using EdlinSoftware.Timeline.Domain;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -24,14 +26,24 @@ namespace Timeline.Wpf
         private static readonly Event<string>[] _events =
         {
             new Event<string>(
+                "Первая мировая война",
+                SpecificDate.AnnoDomini(1914, 7, 28),
+                SpecificDate.AnnoDomini(1918, 11, 11)
+            ),
+            new Event<string>(
+                "Вторая мировая война",
+                SpecificDate.AnnoDomini(1939, 9, 1),
+                SpecificDate.AnnoDomini(1945, 9, 2)
+            ),
+            new Event<string>(
                 "Великая Отечественная Война", 
                 SpecificDate.AnnoDomini(1941, 6, 21), 
                 SpecificDate.AnnoDomini(1945, 5, 9)
             )
         };
 
+        private readonly LinkedList<Action> _releases = new LinkedList<Action>();
         private TimeRange _timeRange;
-        private bool _postponeRedrawing = false;
 
         public MainWindow()
         {
@@ -44,6 +56,16 @@ namespace Timeline.Wpf
 
             startPicker.SelectedDate = DateTime.MinValue;
             endPicker.SelectedDate = DateTime.MaxValue;
+        }
+
+        private void ReleaseAll()
+        {
+            foreach (var release in _releases)
+            {
+                release();
+            }
+
+            _releases.Clear();
         }
 
         private static ExactDateInfo ToExactDateInfo(DateTime dateTime)
@@ -64,13 +86,15 @@ namespace Timeline.Wpf
 
         private void DrawEvents()
         {
+            ReleaseAll();
+
             canvas.Children.Clear();
 
             if (canvas.ActualWidth < 1) return;
 
             DrawTimeLine(canvas, FingerWidthInInches / 2 * UnitsPerInch);
 
-            DrawEvents(canvas, FingerWidthInInches * UnitsPerInch);
+            DrawEvents(canvas, 2 * FingerWidthInInches * UnitsPerInch);
         }
 
         private void DrawTimeLine(Canvas canvas, double yPos)
@@ -78,6 +102,8 @@ namespace Timeline.Wpf
             DrawBaseLine(canvas, yPos);
 
             DrawTicks(canvas, yPos);
+
+            DrawGrips(canvas, yPos);
         }
 
         private void DrawBaseLine(Canvas canvas, double yPos)
@@ -154,6 +180,86 @@ namespace Timeline.Wpf
             }
         }
 
+        private void DrawGrips(Canvas canvas, double yPos)
+        {
+            var canvasWidth = canvas.ActualWidth;
+
+            var leftGrip = new Rectangle();
+            leftGrip.Width = 4;
+            leftGrip.Height = HalfFingerWidthInUnits;
+            leftGrip.SetValue(Canvas.LeftProperty, HalfFingerWidthInUnits / 2 - 2);
+            leftGrip.SetValue(Canvas.TopProperty, HalfFingerWidthInUnits / 2);
+            leftGrip.Fill = Brushes.Black;
+            leftGrip.Cursor = Cursors.SizeWE;
+            MouseButtonEventHandler leftGripMouseDownHandler = (sender, e) =>
+            {
+                leftGrip.CaptureMouse();
+                e.Handled = true;
+            };
+            leftGrip.MouseDown += leftGripMouseDownHandler;
+            _releases.AddLast(() => { leftGrip.MouseDown -= leftGripMouseDownHandler; });
+            MouseButtonEventHandler leftGripMouseUpHandler = (sender, e) => {
+                leftGrip.ReleaseMouseCapture();
+
+                var currentX = e.GetPosition(canvas).X;
+
+                var deltaInUnits = currentX - HalfFingerWidthInUnits / 2;
+
+                var canvasWidth = canvas.ActualWidth;
+
+                var timeLineLength = canvasWidth - FingerWidthInUnits;
+
+                var deltaDuration = (_timeRange.Duration / timeLineLength) * deltaInUnits;
+
+                _timeRange = _timeRange.SetStart(_timeRange.Start + deltaDuration);
+
+                DrawEvents();
+
+                e.Handled = true;
+            };
+            leftGrip.MouseUp += leftGripMouseUpHandler;
+            _releases.AddLast(() => { leftGrip.MouseUp -= leftGripMouseUpHandler; });
+
+            canvas.Children.Add(leftGrip);
+
+            var rightGrip = new Rectangle();
+            rightGrip.Width = 4;
+            rightGrip.Height = HalfFingerWidthInUnits;
+            rightGrip.SetValue(Canvas.LeftProperty, canvasWidth - HalfFingerWidthInUnits / 2 - 2);
+            rightGrip.SetValue(Canvas.TopProperty, HalfFingerWidthInUnits / 2);
+            rightGrip.Fill = Brushes.Black;
+            rightGrip.Cursor = Cursors.SizeWE;
+            MouseButtonEventHandler rightGripMouseDownHandler = (sender, e) => {
+                rightGrip.CaptureMouse();
+                e.Handled = true;
+            };
+            rightGrip.MouseDown += rightGripMouseDownHandler;
+            _releases.AddLast(() => { rightGrip.MouseDown -= rightGripMouseDownHandler; });
+            MouseButtonEventHandler rightGripMouseUpHandler = (sender, e) => {
+                rightGrip.ReleaseMouseCapture();
+
+                var currentX = e.GetPosition(canvas).X;
+
+                var canvasWidth = canvas.ActualWidth;
+
+                var deltaInUnits = currentX - (canvasWidth - HalfFingerWidthInUnits / 2);
+
+                var timeLineLength = canvasWidth - FingerWidthInUnits;
+
+                var deltaDuration = (_timeRange.Duration / timeLineLength) * deltaInUnits;
+
+                _timeRange = _timeRange.SetEnd(_timeRange.End + deltaDuration);
+
+                DrawEvents();
+
+                e.Handled = true;
+            };
+            rightGrip.MouseUp += rightGripMouseUpHandler;
+            _releases.AddLast(() => { rightGrip.MouseUp -= rightGripMouseUpHandler; });
+
+            canvas.Children.Add(rightGrip);
+        }
+
         private void DrawEvents(Canvas canvas, double yPos)
         {
             var canvasWidth = canvas.ActualWidth;
@@ -210,11 +316,13 @@ namespace Timeline.Wpf
                 circle.Fill = Brushes.Black;
                 circle.Stroke = Brushes.Black;
 
-                circle.MouseDown += (sender, e) =>
+                MouseButtonEventHandler mouseDownHandler = (sender, e) =>
                 {
                     MessageBox.Show(@event.Description);
                     e.Handled = true;
                 };
+                circle.MouseDown += mouseDownHandler;
+                _releases.AddLast(() => { circle.MouseDown -= mouseDownHandler; });
 
                 canvas.Children.Add(circle);
             }
@@ -244,13 +352,25 @@ namespace Timeline.Wpf
                 rectangle.Stroke = Brushes.Black;
                 rectangle.Fill = Brushes.White;
 
-                rectangle.MouseDown += (sender, e) =>
+                canvas.Children.Add(rectangle);
+
+                var text = new TextBlock();
+                text.Text = @event.Description;
+                text.Width = rectangle.Width - 2;
+                text.Height = rectangle.Height - 2;
+                text.SetValue(Canvas.LeftProperty, eventStartXPos + 1);
+                text.SetValue(Canvas.TopProperty, yPos + 1 + 1);
+                text.TextAlignment = TextAlignment.Center;
+
+                MouseButtonEventHandler mouseDownHander = (sender, e) =>
                 {
                     MessageBox.Show(@event.Description);
                     e.Handled = true;
                 };
+                text.MouseDown += mouseDownHander;
+                _releases.AddLast(() => { text.MouseDown -= mouseDownHander; });
 
-                canvas.Children.Add(rectangle);
+                canvas.Children.Add(text);
             }
         }
 
@@ -268,7 +388,7 @@ namespace Timeline.Wpf
             DrawEvents();
         }
 
-        private void OnScaleTimeLine(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        private void OnScaleTimeLine(object sender, MouseWheelEventArgs e)
         {
             var canvasWidth = canvas.ActualWidth;
 
@@ -293,7 +413,7 @@ namespace Timeline.Wpf
             e.Handled = true;
         }
 
-        private void OnMouseDownOnCanvas(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void OnMouseDownOnCanvas(object sender, MouseButtonEventArgs e)
         {
             var position = Mouse.GetPosition(canvas);
 
