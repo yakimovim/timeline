@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -44,6 +43,7 @@ namespace Timeline.Wpf
 
         private readonly LinkedList<Action> _releases = new LinkedList<Action>();
         private TimeRange _timeRange;
+        private Point? _canvasPosition;
 
         public MainWindow()
         {
@@ -53,9 +53,6 @@ namespace Timeline.Wpf
                 ToExactDateInfo(DateTime.MinValue),
                 ToExactDateInfo(DateTime.MaxValue)
             );
-
-            startPicker.SelectedDate = DateTime.MinValue;
-            endPicker.SelectedDate = DateTime.MaxValue;
         }
 
         private void ReleaseAll()
@@ -402,20 +399,6 @@ namespace Timeline.Wpf
             }
         }
 
-        private void StartDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            _timeRange = _timeRange.SetStart(ToExactDateInfo(startPicker.SelectedDate.Value));
-
-            DrawEvents();
-        }
-
-        private void EndDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            _timeRange = _timeRange.SetEnd(ToExactDateInfo(endPicker.SelectedDate.Value));
-
-            DrawEvents();
-        }
-
         private void OnScaleTimeLine(object sender, MouseWheelEventArgs e)
         {
             var canvasWidth = canvas.ActualWidth;
@@ -443,22 +426,26 @@ namespace Timeline.Wpf
 
         private void OnMouseDownOnCanvas(object sender, MouseButtonEventArgs e)
         {
-            var position = Mouse.GetPosition(canvas);
+            e.Handled = true;
 
-            DragDrop.DoDragDrop(
-                canvas, 
-                position, 
-                DragDropEffects.Move
-            );
+            canvas.CaptureMouse();
+
+            _canvasPosition = e.GetPosition(canvas);
         }
 
-        private void OnDropOnCanvas(object sender, DragEventArgs e)
+        private void OnMouseUpOnCanvas(object sender, MouseButtonEventArgs e)
         {
-            if (e.OriginalSource != canvas) return;
+            e.Handled = true;
+
+            if (!_canvasPosition.HasValue) return;
 
             var currentPosition = e.GetPosition(canvas);
 
-            var prevPosition = (Point)e.Data.GetData(typeof(Point));
+            var prevPosition = _canvasPosition.Value;
+
+            _canvasPosition = null;
+
+            canvas.ReleaseMouseCapture();
 
             var deltaInUnits = prevPosition.X - currentPosition.X;
 
@@ -471,8 +458,6 @@ namespace Timeline.Wpf
             _timeRange = _timeRange.Move(deltaDuration);
 
             DrawEvents();
-
-            e.Handled = true;
         }
     }
 }

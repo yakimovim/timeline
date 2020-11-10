@@ -7,26 +7,12 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Label>Start date</Label>
-            <DatePicker x:Name="startPicker" SelectedDateChanged="StartDateChanged" />
-        </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Label>End date</Label>
-            <DatePicker x:Name="endPicker" SelectedDateChanged="EndDateChanged" />
-        </StackPanel>
-        <Canvas x:Name="canvas" Grid.Row="2"
+        <Canvas x:Name="canvas"
                 Background="White"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                 SizeChanged="CanvasSizeChanged"
                 MouseWheel="OnScaleTimeLine"
                 MouseDown="OnMouseDownOnCanvas"
-                AllowDrop="True"
-                Drop="OnDropOnCanvas"/>
+                MouseUp="OnMouseUpOnCanvas"/>
     </Grid>
 </Window>
