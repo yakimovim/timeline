@@ -155,8 +155,8 @@ namespace Timeline.Wpf
 
                 canvas.Children.Add(tickLine);
 
-                var label = new Label();
-                label.HorizontalAlignment = HorizontalAlignment.Center;
+                var tickLabel = new TextBlock();
+                tickLabel.TextAlignment = TextAlignment.Center;
 
                 var labelText = tick.ToString();
 
@@ -166,17 +166,17 @@ namespace Timeline.Wpf
                     labelText,
                     CultureInfo.CurrentUICulture,
                     FlowDirection.LeftToRight,
-                    label.FontFamily.GetTypefaces().First(),
-                    label.FontSize,
+                    tickLabel.FontFamily.GetTypefaces().First(),
+                    tickLabel.FontSize,
                     Brushes.Black,
                     pixelsPerDip
                 );
 
-                label.Content = labelText;
-                label.SetValue(Canvas.LeftProperty, tickXPos - (formattedText.Width / 2));
-                label.SetValue(Canvas.TopProperty, yPos + 4);
+                tickLabel.Text = labelText;
+                tickLabel.SetValue(Canvas.LeftProperty, tickXPos - (formattedText.Width / 2));
+                tickLabel.SetValue(Canvas.TopProperty, yPos + 4);
 
-                canvas.Children.Add(label);
+                canvas.Children.Add(tickLabel);
             }
         }
 
@@ -184,13 +184,15 @@ namespace Timeline.Wpf
         {
             var canvasWidth = canvas.ActualWidth;
 
-            var leftGrip = new Rectangle();
-            leftGrip.Width = 4;
-            leftGrip.Height = HalfFingerWidthInUnits;
+            var leftGrip = new Rectangle
+            {
+                Width = 4,
+                Height = HalfFingerWidthInUnits,
+                Fill = Brushes.Black,
+                Cursor = Cursors.SizeWE
+            };
             leftGrip.SetValue(Canvas.LeftProperty, HalfFingerWidthInUnits / 2 - 2);
             leftGrip.SetValue(Canvas.TopProperty, HalfFingerWidthInUnits / 2);
-            leftGrip.Fill = Brushes.Black;
-            leftGrip.Cursor = Cursors.SizeWE;
             MouseButtonEventHandler leftGripMouseDownHandler = (sender, e) =>
             {
                 leftGrip.CaptureMouse();
@@ -222,13 +224,15 @@ namespace Timeline.Wpf
 
             canvas.Children.Add(leftGrip);
 
-            var rightGrip = new Rectangle();
-            rightGrip.Width = 4;
-            rightGrip.Height = HalfFingerWidthInUnits;
+            var rightGrip = new Rectangle
+            {
+                Width = 4,
+                Height = HalfFingerWidthInUnits,
+                Fill = Brushes.Black,
+                Cursor = Cursors.SizeWE
+            };
             rightGrip.SetValue(Canvas.LeftProperty, canvasWidth - HalfFingerWidthInUnits / 2 - 2);
             rightGrip.SetValue(Canvas.TopProperty, HalfFingerWidthInUnits / 2);
-            rightGrip.Fill = Brushes.Black;
-            rightGrip.Cursor = Cursors.SizeWE;
             MouseButtonEventHandler rightGripMouseDownHandler = (sender, e) => {
                 rightGrip.CaptureMouse();
                 e.Handled = true;
@@ -286,7 +290,7 @@ namespace Timeline.Wpf
                 }
                 else
                 {
-                    DrawIntervalEvents(canvas, yPos, eventsLine.Events);
+                    DrawIntervalEvents(canvas, yPos, eventsLine.Events, Colors.LightGoldenrodYellow);
                 }
 
                 yPos += FingerWidthInUnits;
@@ -328,7 +332,11 @@ namespace Timeline.Wpf
             }
         }
 
-        private void DrawIntervalEvents(Canvas canvas, double yPos, NonOverlappintEvents<string> events)
+        private void DrawIntervalEvents(
+            Canvas canvas, 
+            double yPos, 
+            NonOverlappintEvents<string> events,
+            Color baseColor)
         {
             var canvasWidth = canvas.ActualWidth;
 
@@ -341,26 +349,46 @@ namespace Timeline.Wpf
                 var eventStartXPos = timeLineStart + ((@event.Start - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
                 var eventEndXPos = timeLineStart + ((@event.End - _timeRange.Start) / _timeRange.Duration) * timeLineLength;
 
-                var rectangle = new Rectangle();
+                var noLeftSide = @event.Start < _timeRange.Start;
+                var noRightSide = @event.End > _timeRange.End;
 
-                rectangle.Width = (eventEndXPos - eventStartXPos);
+                var rectangle = new Border();
+
+                rectangle.Width = noLeftSide && noRightSide
+                    ? timeLineLength
+                    : noLeftSide
+                        ? (eventEndXPos - timeLineStart)
+                        : noRightSide
+                            ? (timeLineLength + timeLineStart - eventStartXPos)
+                            : (eventEndXPos - eventStartXPos);
                 rectangle.Height = FingerWidthInUnits - 2;
 
-                rectangle.SetValue(Canvas.LeftProperty, eventStartXPos);
+                rectangle.SetValue(
+                    Canvas.LeftProperty, 
+                    noLeftSide ? timeLineStart : eventStartXPos
+                );
                 rectangle.SetValue(Canvas.TopProperty, yPos + 1);
 
-                rectangle.Stroke = Brushes.Black;
-                rectangle.Fill = Brushes.White;
+                rectangle.BorderBrush = Brushes.Black;
+                rectangle.BorderThickness = new Thickness(
+                    noLeftSide ? 0 : 1,
+                    1,
+                    noRightSide ? 0 : 1,
+                    1
+                );
+                rectangle.Background = new SolidColorBrush(baseColor);
 
                 canvas.Children.Add(rectangle);
 
                 var text = new TextBlock();
                 text.Text = @event.Description;
                 text.Width = rectangle.Width - 2;
-                text.Height = rectangle.Height - 2;
+                // text.Height = rectangle.Height - 2;
+                text.VerticalAlignment = VerticalAlignment.Center;
                 text.SetValue(Canvas.LeftProperty, eventStartXPos + 1);
                 text.SetValue(Canvas.TopProperty, yPos + 1 + 1);
                 text.TextAlignment = TextAlignment.Center;
+                text.FontWeight = FontWeights.Bold;
 
                 MouseButtonEventHandler mouseDownHander = (sender, e) =>
                 {
@@ -370,7 +398,7 @@ namespace Timeline.Wpf
                 text.MouseDown += mouseDownHander;
                 _releases.AddLast(() => { text.MouseDown -= mouseDownHander; });
 
-                canvas.Children.Add(text);
+                rectangle.Child = text;
             }
         }
 
