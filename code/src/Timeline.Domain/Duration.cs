@@ -36,8 +36,7 @@ namespace EdlinSoftware.Timeline.Domain
 
         public bool Equals(Duration other)
         {
-            return other != null &&
-                _hours == other._hours;
+            return _hours == other._hours;
         }
 
         public override int GetHashCode()
@@ -90,19 +89,19 @@ namespace EdlinSoftware.Timeline.Domain
 
                 duration -= HoursInYear * years;
 
-                years = years + 1;
+                years += 1;
 
                 var months = Convert.ToInt32(duration / HoursInMonth);
 
                 duration -= HoursInMonth * months;
 
-                months = months + 1;
+                months += 1;
 
                 var days = Convert.ToInt32(duration / HoursInDay);
 
                 duration -= HoursInDay * days;
 
-                days = days + 1;
+                days += 1;
 
                 FixDate(ref years, ref months, ref days);
 
@@ -127,13 +126,13 @@ namespace EdlinSoftware.Timeline.Domain
 
                 duration -= HoursInMonth * months;
 
-                months = months + 1;
+                months += 1;
 
                 var days = Convert.ToInt32(duration / HoursInDay);
 
                 duration -= HoursInDay * days;
 
-                days = days + 1;
+                days += 1;
 
                 var hours = Convert.ToInt32(duration);
 
@@ -225,12 +224,6 @@ namespace EdlinSoftware.Timeline.Domain
 
         public static bool operator ==(Duration a, Duration b)
         {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
-                return true;
-
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-                return false;
-
             return a.Equals(b);
         }
 

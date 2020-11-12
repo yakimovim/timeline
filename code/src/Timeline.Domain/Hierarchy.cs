@@ -130,12 +130,12 @@ namespace EdlinSoftware.Timeline.Domain
         /// <summary>
         /// Left service index.
         /// </summary>
-        internal int Left { get; set; }
+        public int Left { get; internal set; }
 
         /// <summary>
         /// Right service index.
         /// </summary>
-        internal int Right { get; set; }
+        public int Right { get; internal set; }
 
         /// <summary>
         /// Checks if this node contains subnode with given id.
