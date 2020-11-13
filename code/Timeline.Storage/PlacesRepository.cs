@@ -1,9 +1,7 @@
 ﻿using EdlinSoftware.Timeline.Domain;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Timeline.Storage
@@ -23,25 +21,74 @@ namespace Timeline.Storage
         /// <summary>
         /// Gets places hierarchy.
         /// </summary>
-        public async Task<Hierarchy<string>> GetPlaces()
+        public async Task<Hierarchy<string>> GetPlacesAsync()
         {
             var placesHierarchyNodes = await _db.Places.OrderBy(p => p.Left).ToArrayAsync();
 
             var placesHierarchy = new Hierarchy<string>();
 
-            foreach (var node in placesHierarchyNodes)
+            if (placesHierarchyNodes.Length == 0) return placesHierarchy;
+
+            var minLeft = placesHierarchyNodes.Min(n => n.Left);
+
+            while (true)
             {
+                var node = placesHierarchyNodes.FirstOrDefault(n => n.Left == minLeft);
+
+                if (node == null) break;
+
                 placesHierarchy.AddTopNode(node.Id, node.Content);
+
+                AddSubNodes(
+                    placesHierarchy,
+                    node.Id,
+                    placesHierarchyNodes
+                        .Where(n => n.Left > node.Left && n.Right < node.Right)
+                        .ToArray()
+                );
+
+                minLeft = node.Right + 1;
             }
 
             return placesHierarchy;
+        }
+
+        private void AddSubNodes(
+            Hierarchy<string> placesHierarchy, 
+            string parentNodeId, 
+            PlaceHierarchy[] subNodes)
+        {
+            if (subNodes.Length == 0) return;
+
+            var parentNode = placesHierarchy.GetNodeById(parentNodeId);
+
+            var minLeft = subNodes.Min(n => n.Left);
+
+            while (true)
+            {
+                var node = subNodes.FirstOrDefault(n => n.Left == minLeft);
+
+                if (node == null) break;
+
+                parentNode.AddSubNode(node.Id, node.Content);
+
+                AddSubNodes(
+                    placesHierarchy,
+                    node.Id,
+                    subNodes
+                        .Where(n => n.Left > node.Left && n.Right < node.Right)
+                        .ToArray()
+                );
+
+                minLeft = node.Right + 1;
+            }
         }
 
         /// <summary>
         /// Saves places hierarchy.
         /// </summary>
         /// <param name="places">Places hierarchy.</param>
-        public async Task SavePlaces(Hierarchy<string> places)
+        public async Task SavePlacesAsync(Hierarchy<string> places)
         {
             if (places is null)
             {

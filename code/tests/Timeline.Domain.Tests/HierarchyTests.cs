@@ -34,7 +34,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             var node = hierarchy.TopNodes[0];
 
             node.ShouldNotBeNull();
-            node.Id.ShouldBe(nodeId);
+            node.Id.ShouldBe<StringId>(nodeId);
             node.Content.ShouldBe(content);
             node.Left.ShouldBe(0);
             node.Right.ShouldBe(1);

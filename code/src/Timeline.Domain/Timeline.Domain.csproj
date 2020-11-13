@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>EdlinSoftware.Timeline.Domain</AssemblyName>
     <RootNamespace>EdlinSoftware.Timeline.Domain</RootNamespace>
   </PropertyGroup>
@@ -9,5 +9,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>5</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.12.2" />
+  </ItemGroup>
 
 </Project>

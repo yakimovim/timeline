@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Timeline.Storage
 {
-    public abstract class HierarchyNode
+    /// <summary>
+    /// Model of hierarchy node with string content for storage.
+    /// </summary>
+    public abstract class StringHierarchyNode
     {
         [Key]
         [Required]
         [RegularExpression("^[a-zA-Z_0-9]+$")]
+        [MaxLength(100)]
         public string Id { get; set; }
 
         [Required]

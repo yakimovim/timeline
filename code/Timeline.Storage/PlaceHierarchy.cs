@@ -3,6 +3,6 @@
 namespace Timeline.Storage
 {
     [Table("places")]
-    public class PlaceHierarchy : HierarchyNode
+    public class PlaceHierarchy : StringHierarchyNode
     { }
 }

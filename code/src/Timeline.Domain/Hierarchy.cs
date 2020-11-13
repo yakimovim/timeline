@@ -24,14 +24,14 @@ namespace EdlinSoftware.Timeline.Domain
         /// Checks if the hierarchy contains node with given id.
         /// </summary>
         /// <param name="id">Node id.</param>
-        public bool ContainsNodeWithId(string id)
+        public bool ContainsNodeWithId(StringId id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
-            return _topNodes.Any(n => n.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+            return _topNodes.Any(n => n.Id.Equals(id))
                 || _topNodes.Any(n => n.ContainsSubNodeWithId(id));
         }
 
@@ -40,14 +40,14 @@ namespace EdlinSoftware.Timeline.Domain
         /// </summary>
         /// <param name="id">Node id.</param>
         /// <returns>Return null, if there is no node with given id in the hierarchy</returns>
-        public HierarchyNode<T> GetNodeById(string id)
+        public HierarchyNode<T> GetNodeById(StringId id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
-            return this.FirstOrDefault(n => n.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            return this.FirstOrDefault(n => n.Id.Equals(id));
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// <param name="id">Node id.</param>
         /// <param name="content">Node content.</param>
         /// <returns>True, if the node was added. False, if given id already exists.</returns>
-        public bool AddTopNode(string id, T content)
+        public bool AddTopNode(StringId id, T content)
         {
             if (ContainsNodeWithId(id)) return false;
 
@@ -105,11 +105,11 @@ namespace EdlinSoftware.Timeline.Domain
         /// </summary>
         public IReadOnlyList<HierarchyNode<T>> SubNodes => _subNodes;
 
-        public HierarchyNode(Hierarchy<T> hierarchy, string id, T content)
+        public HierarchyNode(Hierarchy<T> hierarchy, StringId id, T content)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
             _hierarchy = hierarchy ?? throw new ArgumentNullException(nameof(hierarchy));
@@ -120,7 +120,7 @@ namespace EdlinSoftware.Timeline.Domain
         /// <summary>
         /// Id of the node.
         /// </summary>
-        public string Id { get; }
+        public StringId Id { get; }
 
         /// <summary>
         /// Content of the node.
@@ -141,14 +141,14 @@ namespace EdlinSoftware.Timeline.Domain
         /// Checks if this node contains subnode with given id.
         /// </summary>
         /// <param name="id">Node id.</param>
-        public bool ContainsSubNodeWithId(string id)
+        public bool ContainsSubNodeWithId(StringId id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
-            return _subNodes.Any(n => n.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
+            return _subNodes.Any(n => n.Id.Equals(id))
                 || _subNodes.Any(n => n.ContainsSubNodeWithId(id));
         }
 
@@ -158,11 +158,11 @@ namespace EdlinSoftware.Timeline.Domain
         /// <param name="id">Node id.</param>
         /// <param name="content">Node content.</param>
         /// <returns>True, if the node was added. False, if given id already exists in the hierarchy.</returns>
-        public bool AddSubNode(string id, T content)
+        public bool AddSubNode(StringId id, T content)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
             if (_hierarchy.ContainsNodeWithId(id)) return false;
@@ -191,14 +191,14 @@ namespace EdlinSoftware.Timeline.Domain
         /// </summary>
         /// <param name="id">Node id.</param>
         /// <returns>Return null, if there is no node with given id in the hierarchy</returns>
-        public HierarchyNode<T> GetNodeById(string id)
+        public HierarchyNode<T> GetNodeById(StringId id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id is null)
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' cannot be null", nameof(id));
             }
 
-            return this.FirstOrDefault(n => n.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            return this.FirstOrDefault(n => n.Id.Equals(id));
         }
 
         public IEnumerator<HierarchyNode<T>> GetEnumerator()
