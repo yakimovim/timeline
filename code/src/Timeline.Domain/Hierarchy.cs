@@ -12,8 +12,27 @@ namespace EdlinSoftware.Timeline.Domain
     /// <typeparam name="T">Type of hierarchy node content.</typeparam>
     public class Hierarchy<T> : IEnumerable<HierarchyNode<T>>
     {
+        private sealed class PostponedRenumeration : IDisposable
+        {
+            private readonly Hierarchy<T> _hierarchy;
+
+            public PostponedRenumeration(Hierarchy<T> hierarchy)
+            {
+                _hierarchy = hierarchy ?? throw new ArgumentNullException(nameof(hierarchy));
+            }
+
+            public void Dispose()
+            {
+                _hierarchy._postponeRenumeration = false;
+
+                _hierarchy.RenumerateNodes();
+            }
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly List<HierarchyNode<T>> _topNodes = new List<HierarchyNode<T>>();
+
+        private bool _postponeRenumeration = false;
 
         /// <summary>
         /// Top nodes of the hierarchy.
@@ -67,8 +86,17 @@ namespace EdlinSoftware.Timeline.Domain
             return true;
         }
 
+        public IDisposable PosponeRenumeration()
+        {
+            _postponeRenumeration = true;
+
+            return new PostponedRenumeration(this);
+        }
+
         internal void RenumerateNodes()
         {
+            if (_postponeRenumeration) return;
+
             var serviceIndex = 0;
 
             foreach (var node in _topNodes)

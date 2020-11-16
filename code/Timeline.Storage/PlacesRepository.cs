@@ -29,6 +29,8 @@ namespace Timeline.Storage
 
             if (placesHierarchyNodes.Length == 0) return placesHierarchy;
 
+            using var _ = placesHierarchy.PosponeRenumeration();
+
             var minLeft = placesHierarchyNodes.Min(n => n.Left);
 
             while (true)
