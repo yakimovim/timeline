@@ -168,12 +168,6 @@ namespace EdlinSoftware.Timeline.Domain
 
         public static bool operator ==(PartialDateInfo a, PartialDateInfo b)
         {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
-                return true;
-
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-                return false;
-
             return a.Equals(b);
         }
 

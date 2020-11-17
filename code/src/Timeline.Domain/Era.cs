@@ -10,11 +10,11 @@ namespace EdlinSoftware.Timeline.Domain
         /// <summary>
         /// Before our era.
         /// </summary>
-        BeforeChrist,
+        BeforeChrist = 0,
         /// <summary>
         /// In our era.
         /// </summary>
-        AnnoDomini
+        AnnoDomini = 1
     }
 
     public static class EraExtentions

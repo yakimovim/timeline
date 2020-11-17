@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Timeline.Storage
+namespace EdlinSoftware.Timeline.Storage
 {
     /// <summary>
     /// Database context for timeline storage.
@@ -8,9 +8,14 @@ namespace Timeline.Storage
     public class TimelineContext : DbContext
     {
         /// <summary>
-        /// Stores places hierarchy.
+        /// Places hierarchy nodes.
         /// </summary>
         public DbSet<PlaceHierarchy> Places { get; set; }
+
+        /// <summary>
+        /// Events.
+        /// </summary>
+        public DbSet<Event> Events { get; set; }
 
         public TimelineContext(DbContextOptions<TimelineContext> options)
             : base(options)

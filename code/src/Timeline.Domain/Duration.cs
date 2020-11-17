@@ -252,5 +252,10 @@ namespace EdlinSoftware.Timeline.Domain
             return a.CompareTo(b) <= 0;
         }
 
+        public static implicit operator long(Duration d)
+        {
+            return d._hours;
+        }
+
     }
 }

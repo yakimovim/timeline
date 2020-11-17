@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Timeline.Storage
+namespace EdlinSoftware.Timeline.Storage
 {
     /// <summary>
     /// Repository for work with places.

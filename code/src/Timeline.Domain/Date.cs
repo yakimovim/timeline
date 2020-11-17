@@ -76,6 +76,11 @@ namespace EdlinSoftware.Timeline.Domain
             return Duration.GetDurationFromChristBirth(a.GetDateInfo())
                 - Duration.GetDurationFromChristBirth(b.GetDateInfo());
         }
+
+        public static implicit operator PartialDateInfo(Date d)
+        {
+            return d.GetDateInfo();
+        }
     }
 
     /// <summary>
@@ -90,7 +95,7 @@ namespace EdlinSoftware.Timeline.Domain
 
         public override int GetHashCode() => -1;
 
-        public override string ToString() => DateTime.Now.ToString("G");
+        public override string ToString() => DateTime.Now.ToLongDateString();
 
         protected override PartialDateInfo GetDateInfo()
         {

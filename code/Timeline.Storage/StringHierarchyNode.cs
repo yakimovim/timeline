@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Timeline.Storage
+namespace EdlinSoftware.Timeline.Storage
 {
     /// <summary>
     /// Model of hierarchy node with string content for storage.

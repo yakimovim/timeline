@@ -12,6 +12,11 @@ namespace EdlinSoftware.Timeline.Domain
         private TDescription _description;
         private Date _start;
 
+        /// <summary>
+        /// Event id.
+        /// </summary>
+        public int? Id { get; set; }
+
         public Event(TDescription description, Date start, Date end = null)
         {
             if(description == null)
@@ -53,6 +58,11 @@ namespace EdlinSoftware.Timeline.Domain
         }
 
         /// <summary>
+        /// End of event.
+        /// </summary>
+        public Date End { get; private set; }
+
+        /// <summary>
         /// Checks if this event overlaps with another one
         /// by time.
         /// </summary>
@@ -70,11 +80,6 @@ namespace EdlinSoftware.Timeline.Domain
                 || (other.Start <= Start &&
                 Start - other.Start < other.Duration);
         }
-
-        /// <summary>
-        /// End of event.
-        /// </summary>
-        public Date End { get; private set; }
 
         /// <summary>
         /// Sets time interval of this event.
