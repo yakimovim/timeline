@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EdlinSoftware.Timeline.Domain;
+using System.Linq;
 
 namespace EdlinSoftware.Timeline.Storage
 {
@@ -18,9 +19,16 @@ namespace EdlinSoftware.Timeline.Storage
             _db = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<IReadOnlyList<Event<string>>> GetEventsAsync()
+        public async Task<IReadOnlyList<Event<string>>> GetEventsAsync(EventsSpecification specification = null)
         {
-            var eventsInfo = await _db.Events.ToArrayAsync();
+            IQueryable<Event> query = _db.Events;
+
+            if(specification != null)
+            {
+                query = specification.AugmentQuery(query);
+            }
+
+            var eventsInfo = await query.ToArrayAsync();
 
             var events = new List<Event<string>>(eventsInfo.Length);
 
