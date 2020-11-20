@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using EdlinSoftware.Timeline.Domain;
 
 namespace EdlinSoftware.Timeline.Storage
@@ -17,6 +18,7 @@ namespace EdlinSoftware.Timeline.Storage
     /// <summary>
     /// Event representation for storage.
     /// </summary>
+    [Table("Events")]
     public class Event
     {
         [Key]
@@ -24,8 +26,6 @@ namespace EdlinSoftware.Timeline.Storage
 
         [Required]
         public string Content { get; set; }
-
-        public string Place { get; set; }
 
         public bool StartIsCurrent { get; set; }
 
@@ -38,5 +38,9 @@ namespace EdlinSoftware.Timeline.Storage
         public long? EndDuration { get; set; }
 
         public NullableDateParts? EndNullPart { get; set; }
+
+        public string PlaceId { get; set; }
+
+        public Place Place { get; set; }
     }
 }

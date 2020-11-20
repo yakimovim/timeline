@@ -58,7 +58,7 @@ namespace EdlinSoftware.Timeline.Storage
         private void AddSubNodes(
             Hierarchy<string> placesHierarchy, 
             string parentNodeId, 
-            PlaceHierarchy[] subNodes)
+            Place[] subNodes)
         {
             if (subNodes.Length == 0) return;
 
@@ -100,7 +100,7 @@ namespace EdlinSoftware.Timeline.Storage
             _db.RemoveRange(_db.Places);
 
             await _db.AddRangeAsync(
-                places.Select(node => new PlaceHierarchy
+                places.Select(node => new Place
                 {
                     Id = node.Id,
                     Content = node.Content,

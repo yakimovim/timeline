@@ -24,7 +24,7 @@ namespace EdlinSoftware.Timeline.Domain
             _pointEventMaximumDuration = pointEventMaximumDuration;
         }
 
-        public EventsDistribution<T> Distribute<T>(IReadOnlyList<Event<T>> events)
+        public EventsDistribution<T, P> Distribute<T, P>(IReadOnlyList<Event<T, P>> events)
         {
             if (events is null)
                 throw new ArgumentNullException(nameof(events));
@@ -39,7 +39,7 @@ namespace EdlinSoftware.Timeline.Domain
                 .OrderBy(e => e.Start)
                 .ToArray();
 
-            var distribution = new EventsDistribution<T>();
+            var distribution = new EventsDistribution<T, P>();
 
             AddPointEvents(distribution, pointEvents);
 
@@ -48,13 +48,13 @@ namespace EdlinSoftware.Timeline.Domain
             return distribution;
         }
 
-        private void AddPointEvents<T>(
-            EventsDistribution<T> distribution, 
-            Event<T>[] pointEvents)
+        private void AddPointEvents<T, P>(
+            EventsDistribution<T, P> distribution, 
+            Event<T, P>[] pointEvents)
         {
             if (pointEvents.Length == 0) return;
 
-            var eventsLine = new EventsLine<T>(true);
+            var eventsLine = new EventsLine<T, P>(true);
 
             while(true)
             {
@@ -72,9 +72,9 @@ namespace EdlinSoftware.Timeline.Domain
             distribution.Lines.Add(eventsLine);
         }
 
-        private void AddIntervalEvents<T>(
-            EventsDistribution<T> distribution, 
-            Event<T>[] intervalEvents)
+        private void AddIntervalEvents<T, P>(
+            EventsDistribution<T, P> distribution, 
+            Event<T, P>[] intervalEvents)
         {
             if (intervalEvents.Length == 0) return;
 
@@ -91,13 +91,13 @@ namespace EdlinSoftware.Timeline.Domain
             }
         }
 
-        private (Event<T>[] restIntervalEvents, EventsLine<T> eventsLine) FillEventsLine<T>(Event<T>[] intervalEvents)
+        private (Event<T, P>[] restIntervalEvents, EventsLine<T, P> eventsLine) FillEventsLine<T, P>(Event<T, P>[] intervalEvents)
         {
             if (intervalEvents.Length == 0)
                 throw new InvalidOperationException();
 
-            var eventsLine = new EventsLine<T>(false);
-            var restIntervalEvents = new LinkedList<Event<T>>();
+            var eventsLine = new EventsLine<T, P>(false);
+            var restIntervalEvents = new LinkedList<Event<T, P>>();
 
             var @event = intervalEvents[0];
             eventsLine.Events.Add(@event);

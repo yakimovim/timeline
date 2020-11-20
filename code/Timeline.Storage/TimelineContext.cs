@@ -10,7 +10,7 @@ namespace EdlinSoftware.Timeline.Storage
         /// <summary>
         /// Places hierarchy nodes.
         /// </summary>
-        public DbSet<PlaceHierarchy> Places { get; set; }
+        public DbSet<Place> Places { get; set; }
 
         /// <summary>
         /// Events.
@@ -20,5 +20,15 @@ namespace EdlinSoftware.Timeline.Storage
         public TimelineContext(DbContextOptions<TimelineContext> options)
             : base(options)
         { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.Place)
+                .WithMany()
+                .HasForeignKey(e => e.PlaceId);
+        }
     }
 }

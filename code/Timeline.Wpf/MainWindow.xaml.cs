@@ -22,19 +22,19 @@ namespace Timeline.Wpf
         private static readonly double FingerWidthInUnits = FingerWidthInInches * UnitsPerInch;
         private static readonly double HalfFingerWidthInUnits = FingerWidthInUnits / 2;
 
-        private static readonly Event<string>[] _events =
+        private static readonly Event<string, string>[] _events =
         {
-            new Event<string>(
+            new Event<string, string>(
                 "Первая мировая война",
                 SpecificDate.AnnoDomini(1914, 7, 28),
                 SpecificDate.AnnoDomini(1918, 11, 11)
             ),
-            new Event<string>(
+            new Event<string, string>(
                 "Вторая мировая война",
                 SpecificDate.AnnoDomini(1939, 9, 1),
                 SpecificDate.AnnoDomini(1945, 9, 2)
             ),
-            new Event<string>(
+            new Event<string, string>(
                 "Великая Отечественная Война", 
                 SpecificDate.AnnoDomini(1941, 6, 21), 
                 SpecificDate.AnnoDomini(1945, 5, 9)
@@ -294,7 +294,7 @@ namespace Timeline.Wpf
             }
         }
 
-        private void DrawPointEvents(Canvas canvas, double yPos, NonOverlappintEvents<string> events)
+        private void DrawPointEvents(Canvas canvas, double yPos, NonOverlappintEvents<string, string> events)
         {
             var canvasWidth = canvas.ActualWidth;
 
@@ -332,7 +332,7 @@ namespace Timeline.Wpf
         private void DrawIntervalEvents(
             Canvas canvas, 
             double yPos, 
-            NonOverlappintEvents<string> events,
+            NonOverlappintEvents<string, string> events,
             Color baseColor)
         {
             var canvasWidth = canvas.ActualWidth;

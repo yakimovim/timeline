@@ -12,7 +12,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         {
             Should.Throw<ArgumentNullException>(() =>
             {
-                new Event<string>("Event", null);
+                new Event<string, string>("Event", null);
             });
         }
 
@@ -21,14 +21,14 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         {
             Should.Throw<ArgumentException>(() =>
             {
-                new Event<string>("Event", SpecificDate.AnnoDomini(2020), SpecificDate.AnnoDomini(2000));
+                new Event<string, string>("Event", SpecificDate.AnnoDomini(2020), SpecificDate.AnnoDomini(2000));
             });
         }
 
         [Fact]
         public void Cant_set_null_start()
         {
-            var @event = new Event<string>(
+            var @event = new Event<string, string>(
                 "Event", 
                 SpecificDate.AnnoDomini(2000), 
                 SpecificDate.AnnoDomini(2020)
@@ -43,7 +43,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Cant_set_start_greater_then_end()
         {
-            var @event = new Event<string>(
+            var @event = new Event<string, string>(
                 "Event",
                 SpecificDate.AnnoDomini(2000),
                 SpecificDate.AnnoDomini(2020)
@@ -61,7 +61,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Event_with_start_and_end_has_correct_date_related_properties()
         {
-            var @event = new Event<string>(
+            var @event = new Event<string, string>(
                 "Event",
                 SpecificDate.AnnoDomini(2000),
                 SpecificDate.AnnoDomini(2020)
@@ -75,7 +75,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Event_with_only_start_has_correct_date_related_properties()
         {
-            var @event = new Event<string>(
+            var @event = new Event<string, string>(
                 "Event",
                 SpecificDate.AnnoDomini(2000)
             );
@@ -95,13 +95,13 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             bool overlaps
             )
         {
-            var e1 = new Event<string>(
+            var e1 = new Event<string, string>(
                 "Event1",
                 start1,
                 end1
             );
 
-            var e2 = new Event<string>(
+            var e2 = new Event<string, string>(
                 "Event2",
                 start2,
                 end2

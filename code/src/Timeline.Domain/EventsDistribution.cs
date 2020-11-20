@@ -8,19 +8,21 @@ namespace EdlinSoftware.Timeline.Domain
     /// Contains several lines of non-overlapping events.
     /// </summary>
     /// <typeparam name="TDescription">Type of event description.</typeparam>
-    public sealed class EventsDistribution<TDescription>
+    /// <typeparam name="TPlace">Type of event place.</typeparam>
+    public sealed class EventsDistribution<TDescription, TPlace>
     {
         /// <summary>
         /// List of events lines.
         /// </summary>
-        public List<EventsLine<TDescription>> Lines { get; } = new List<EventsLine<TDescription>>();
+        public List<EventsLine<TDescription, TPlace>> Lines { get; } = new List<EventsLine<TDescription, TPlace>>();
     }
 
     /// <summary>
     /// Contains several non-overlapping events.
     /// </summary>
     /// <typeparam name="TDescription">Type of event description.</typeparam>
-    public sealed class EventsLine<TDescription>
+    /// <typeparam name="TPlace">Type of event place.</typeparam>
+    public sealed class EventsLine<TDescription, TPlace>
     {
         /// <summary>
         /// Is this line contain point (non-inverval) events.
@@ -35,17 +37,18 @@ namespace EdlinSoftware.Timeline.Domain
         /// <summary>
         /// List of non-overlapping events in the line.
         /// </summary>
-        public NonOverlappintEvents<TDescription> Events { get; } = new NonOverlappintEvents<TDescription>();
+        public NonOverlappintEvents<TDescription, TPlace> Events { get; } = new NonOverlappintEvents<TDescription, TPlace>();
     }
 
     /// <summary>
     /// Collection of non-overlapping events.
     /// </summary>
     /// <typeparam name="TDescription">Type of event description.</typeparam>
-    public sealed class NonOverlappintEvents<TDescription> : Collection<Event<TDescription>>
+    /// <typeparam name="TPlace">Type of event place.</typeparam>
+    public sealed class NonOverlappintEvents<TDescription, TPlace> : Collection<Event<TDescription, TPlace>>
     {
         /// <inheritdoc />
-        protected override void SetItem(int index, Event<TDescription> item)
+        protected override void SetItem(int index, Event<TDescription, TPlace> item)
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -64,7 +67,7 @@ namespace EdlinSoftware.Timeline.Domain
         }
 
         /// <inheritdoc />
-        protected override void InsertItem(int index, Event<TDescription> item)
+        protected override void InsertItem(int index, Event<TDescription, TPlace> item)
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));

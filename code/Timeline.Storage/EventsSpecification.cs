@@ -118,4 +118,24 @@ namespace EdlinSoftware.Timeline.Storage
             )); 
         }
     }
+
+    public sealed class PlaceWithoutParentsEventsSpecification : EventsSpecification
+    {
+        private readonly HierarchyNode<string> _place;
+
+        public PlaceWithoutParentsEventsSpecification(HierarchyNode<string> place)
+        {
+            _place = place ?? throw new ArgumentNullException(nameof(place));
+        }
+
+        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        {
+            if (query is null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Where(e => e.Place.Left >= _place.Left && e.Place.Right <= _place.Right);
+        }
+    }
 }

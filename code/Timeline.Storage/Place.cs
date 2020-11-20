@@ -2,7 +2,7 @@
 
 namespace EdlinSoftware.Timeline.Storage
 {
-    [Table("places")]
-    public class PlaceHierarchy : StringHierarchyNode
+    [Table("Places")]
+    public class Place : StringHierarchyNode
     { }
 }

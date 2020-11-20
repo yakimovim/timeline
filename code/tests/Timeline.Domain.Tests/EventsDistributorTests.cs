@@ -27,7 +27,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Distribute_single_point_event()
         {
-            var e = new Event<string>(
+            var e = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2020, 3)
@@ -47,7 +47,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Distribute_single_interval_event()
         {
-            var e = new Event<string>(
+            var e = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2022)
@@ -67,12 +67,12 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Point_and_interval_events_should_be_in_separate_lines()
         {
-            var e1 = new Event<string>(
+            var e1 = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2020, 3)
             );
-            var e2 = new Event<string>(
+            var e2 = new Event<string, string>(
                 "2",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2022)
@@ -96,16 +96,16 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Some_point_events_can_be_dropped_if_distance_between_them_is_less_than_threshold()
         {
-            var e1 = new Event<string>(
+            var e1 = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020, 2),
                 SpecificDate.AnnoDomini(2020, 3)
             );
-            var e2 = new Event<string>(
+            var e2 = new Event<string, string>(
                 "2",
                 SpecificDate.AnnoDomini(2020)
             );
-            var e3 = new Event<string>(
+            var e3 = new Event<string, string>(
                 "3",
                 SpecificDate.AnnoDomini(2022, 1),
                 SpecificDate.AnnoDomini(2022, 2)
@@ -127,17 +127,17 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Overlapping_interval_events_must_be_separated_to_several_lines()
         {
-            var e1 = new Event<string>(
+            var e1 = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2022)
             );
-            var e2 = new Event<string>(
+            var e2 = new Event<string, string>(
                 "2",
                 SpecificDate.AnnoDomini(2021),
                 SpecificDate.AnnoDomini(2023)
             );
-            var e3 = new Event<string>(
+            var e3 = new Event<string, string>(
                 "3",
                 SpecificDate.AnnoDomini(2021),
                 SpecificDate.AnnoDomini(2024)
@@ -165,17 +165,17 @@ namespace EdlinSoftware.Timeline.Domain.Tests
         [Fact]
         public void Non_overlapping_interval_events_must_be_in_single_line()
         {
-            var e1 = new Event<string>(
+            var e1 = new Event<string, string>(
                 "1",
                 SpecificDate.AnnoDomini(2020),
                 SpecificDate.AnnoDomini(2022)
             );
-            var e2 = new Event<string>(
+            var e2 = new Event<string, string>(
                 "2",
                 SpecificDate.AnnoDomini(2021),
                 SpecificDate.AnnoDomini(2023)
             );
-            var e3 = new Event<string>(
+            var e3 = new Event<string, string>(
                 "3",
                 SpecificDate.AnnoDomini(2023),
                 SpecificDate.AnnoDomini(2025)
@@ -198,7 +198,7 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             distribution.Lines[1].Events[0].ShouldBeSameAs(e2);
         }
 
-        private EventsDistribution<string> Distribute(params Event<string>[] events)
+        private EventsDistribution<string, string> Distribute(params Event<string, string>[] events)
         {
             return _eventsDistributor.Distribute(events);
         }

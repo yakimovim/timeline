@@ -7,7 +7,8 @@ namespace EdlinSoftware.Timeline.Domain
     /// Represents some event.
     /// </summary>
     /// <typeparam name="TDescription">Type of event description.</typeparam>
-    public class Event<TDescription>
+    /// <typeparam name="TPlace">Type of event place.</typeparam>
+    public class Event<TDescription, TPlace>
     {
         private TDescription _description;
         private Date _start;
@@ -63,11 +64,40 @@ namespace EdlinSoftware.Timeline.Domain
         public Date End { get; private set; }
 
         /// <summary>
+        /// Duration of the event.
+        /// </summary>
+        public Duration Duration
+        {
+            get
+            {
+                if (End == null) return Duration.Zero;
+
+                return End - Start;
+            }
+        }
+
+        /// <summary>
+        /// Sets time interval of this event.
+        /// </summary>
+        /// <param name="start">Start of the event.</param>
+        /// <param name="end">End of the event.</param>
+        public void SetInterval(Date start, Date end = null)
+        {
+            if (start is null) throw new ArgumentNullException(nameof(start), "Event start can't be null.");
+
+            if (end != null && end < start)
+                throw new ArgumentException("Event end should be no less then start.", nameof(end));
+
+            _start = start;
+            End = end;
+        }
+
+        /// <summary>
         /// Checks if this event overlaps with another one
         /// by time.
         /// </summary>
         /// <param name="other">Another event.</param>
-        public bool OverlapsWith(Event<TDescription> other)
+        public bool OverlapsWith(Event<TDescription, TPlace> other)
         {
             if (other is null)
                 throw new ArgumentNullException(nameof(other));
@@ -82,32 +112,8 @@ namespace EdlinSoftware.Timeline.Domain
         }
 
         /// <summary>
-        /// Sets time interval of this event.
+        /// Place of the event.
         /// </summary>
-        /// <param name="start">Start of the event.</param>
-        /// <param name="end">End of the event.</param>
-        public void SetInterval(Date start, Date end = null)
-        {
-            if (start is null) throw new ArgumentNullException(nameof(start), "Event start can't be null.");
-
-            if(end != null && end < start)
-                throw new ArgumentException("Event end should be no less then start.", nameof(end));
-
-            _start = start;
-            End = end;
-        }
-
-        /// <summary>
-        /// Duration of the event.
-        /// </summary>
-        public Duration Duration
-        {
-            get
-            {
-                if (End == null) return Duration.Zero;
-
-                return End - Start;
-            }
-        }
+        public HierarchyNode<TPlace> Place { get; set; }
     }
 }
