@@ -25,7 +25,7 @@ namespace EdlinSoftware.Timeline.Storage
 
             if(specification != null)
             {
-                query = specification.AugmentQuery(query);
+                query = query.Where(specification.GetFilterExpression());
             }
 
             var eventsInfo = await query.ToArrayAsync();

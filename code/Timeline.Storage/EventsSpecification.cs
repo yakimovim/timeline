@@ -1,6 +1,7 @@
 ﻿using EdlinSoftware.Timeline.Domain;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace EdlinSoftware.Timeline.Storage
 {
@@ -10,38 +11,68 @@ namespace EdlinSoftware.Timeline.Storage
     public abstract class EventsSpecification
     {
         /// <summary>
-        /// Augments events query.
+        /// Returns filter expression.
         /// </summary>
-        /// <param name="query">Events query.</param>
-        public abstract IQueryable<Event> AugmentQuery(IQueryable<Event> query);
+        public abstract Expression<Func<Event, bool>> GetFilterExpression();
+    }
+
+    internal class ParameterReplacer : ExpressionVisitor
+    {
+        private ParameterExpression _parameter;
+
+        public Expression ReplaceParameterWith(
+            ParameterExpression parameter,
+            Expression bodyExpr)
+        {
+            if (bodyExpr is null)
+            {
+                throw new ArgumentNullException(nameof(bodyExpr));
+            }
+
+            _parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
+
+            return Visit(bodyExpr);
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node) => _parameter;
     }
 
     /// <summary>
-    /// Applies several specifications one after another.
+    /// Applies several specifications combined with AND logical operator.
     /// </summary>
-    public sealed class CompositeEventsSpecification : EventsSpecification
+    public sealed class AndEventsSpecification : EventsSpecification
     {
         private readonly EventsSpecification[] _specifications;
 
-        public CompositeEventsSpecification(params EventsSpecification[] specifications)
+        public AndEventsSpecification(params EventsSpecification[] specifications)
         {
             _specifications = specifications;
         }
 
         /// <inheritdoc />
-        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        public override Expression<Func<Event, bool>> GetFilterExpression()
         {
-            if (query is null)
+            if (_specifications.Length == 0) return (e => true);
+
+            Expression<Func<Event, bool>> result = _specifications[0].GetFilterExpression();
+
+            var parameterReplacer = new ParameterReplacer();
+
+            foreach (var specification in _specifications.Skip(1))
             {
-                throw new ArgumentNullException(nameof(query));
+                var filterExpression = specification.GetFilterExpression();
+
+                var parameter = Expression.Parameter(typeof(Event));
+
+                result = Expression.Lambda<Func<Event, bool>>(
+                    Expression.And(
+                        parameterReplacer.ReplaceParameterWith(parameter, result.Body),
+                        parameterReplacer.ReplaceParameterWith(parameter, filterExpression.Body)
+                    ),
+                    parameter);
             }
 
-            foreach (var specification in _specifications)
-            {
-                query = specification.AugmentQuery(query);
-            }
-
-            return query;
+            return result;
         }
     }
 
@@ -58,13 +89,8 @@ namespace EdlinSoftware.Timeline.Storage
         }
 
         /// <inheritdoc />
-        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        public override Expression<Func<Event, bool>> GetFilterExpression()
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
             long timeRangeStartDuration = Duration.GetDurationFromChristBirth(_timeRange.Start);
             long timeRangeEndDuration = Duration.GetDurationFromChristBirth(_timeRange.End);
 
@@ -79,7 +105,7 @@ namespace EdlinSoftware.Timeline.Storage
                 )
             );
 
-            return query.Where(e => !(
+            return (e => !(
                 ( // start date of event is greater than time range end
                     ( // start date of event is current date
                         e.StartIsCurrent &&
@@ -135,14 +161,9 @@ namespace EdlinSoftware.Timeline.Storage
             _place = place ?? throw new ArgumentNullException(nameof(place));
         }
 
-        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        public override Expression<Func<Event, bool>> GetFilterExpression()
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            return query.Where(e => e.Place.Left >= _place.Left && e.Place.Right <= _place.Right);
+            return (e => e.Place.Left >= _place.Left && e.Place.Right <= _place.Right);
         }
     }
 
@@ -159,14 +180,9 @@ namespace EdlinSoftware.Timeline.Storage
             _place = place ?? throw new ArgumentNullException(nameof(place));
         }
 
-        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        public override Expression<Func<Event, bool>> GetFilterExpression()
         {
-            if (query is null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            return query.Where(e => 
+            return (e => 
                 // self and children
                 (e.Place.Left >= _place.Left && e.Place.Right <= _place.Right) || 
                 // parents
