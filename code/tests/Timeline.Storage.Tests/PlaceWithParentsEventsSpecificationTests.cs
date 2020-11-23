@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Timeline.Storage.Tests
 {
-    public class PlaceWithoutParentsEventsSpecificationTests
-        : IClassFixture<PlaceWithoutParentsEventsSpecificationTestsFixture>
+    public class PlaceWithParentsEventsSpecificationTests
+        : IClassFixture<PlaceWithParentsEventsSpecificationTestsFixture>
     {
-        private readonly PlaceWithoutParentsEventsSpecificationTestsFixture _fixture;
+        private readonly PlaceWithParentsEventsSpecificationTestsFixture _fixture;
 
-        public PlaceWithoutParentsEventsSpecificationTests(
-            PlaceWithoutParentsEventsSpecificationTestsFixture fixture)
+        public PlaceWithParentsEventsSpecificationTests(
+            PlaceWithParentsEventsSpecificationTestsFixture fixture)
         {
             _fixture = fixture ?? throw new System.ArgumentNullException(nameof(fixture));
         }
@@ -24,7 +24,7 @@ namespace Timeline.Storage.Tests
             // Act
 
             var eventsInPlace = await _fixture.EventsRepo.GetEventsAsync(
-                new PlaceWithoutParentsEventsSpecification(
+                new PlaceWithParentsEventsSpecification(
                     _fixture.Hierarchy.GetNodeById("mars")
                 )
             );
@@ -32,7 +32,9 @@ namespace Timeline.Storage.Tests
             // Assert
 
             eventsInPlace.ShouldNotBeNull();
-            eventsInPlace.ShouldBeEmpty();
+            eventsInPlace.Count.ShouldBe(2);
+            eventsInPlace.ShouldContain(e => e.Description == "B");
+            eventsInPlace.ShouldContain(e => e.Description == "C");
         }
 
         [Fact]
@@ -41,7 +43,7 @@ namespace Timeline.Storage.Tests
             // Act
 
             var eventsInPlace = await _fixture.EventsRepo.GetEventsAsync(
-                new PlaceWithoutParentsEventsSpecification(
+                new PlaceWithParentsEventsSpecification(
                     _fixture.Hierarchy.GetNodeById("solar_system")
                 )
             );
@@ -49,21 +51,22 @@ namespace Timeline.Storage.Tests
             // Assert
 
             eventsInPlace.ShouldNotBeNull();
-            eventsInPlace.Count.ShouldBe(2);
+            eventsInPlace.Count.ShouldBe(3);
+            eventsInPlace.ShouldContain(e => e.Description == "B");
             eventsInPlace.ShouldContain(e => e.Description == "C");
             eventsInPlace.ShouldContain(e => e.Description == "D");
         }
 
     }
 
-    public class PlaceWithoutParentsEventsSpecificationTestsFixture : IAsyncLifetime
+    public class PlaceWithParentsEventsSpecificationTestsFixture : IAsyncLifetime
     {
         public readonly TimelineContext Db;
         public readonly EventsRepository EventsRepo;
         public readonly PlacesRepository PlacesRepo;
         public readonly Hierarchy<string> Hierarchy;
 
-        public PlaceWithoutParentsEventsSpecificationTestsFixture()
+        public PlaceWithParentsEventsSpecificationTestsFixture()
         {
             Db = TimelineContextProvider.GetDbContext();
 

@@ -45,6 +45,9 @@ namespace EdlinSoftware.Timeline.Storage
         }
     }
 
+    /// <summary>
+    /// Specification for events in given time range.
+    /// </summary>
     public sealed class TimeRangeEventsSpecification : EventsSpecification
     {
         private readonly TimeRange _timeRange;
@@ -119,6 +122,10 @@ namespace EdlinSoftware.Timeline.Storage
         }
     }
 
+    /// <summary>
+    /// Specification for events in given place.
+    /// It does not include "parent" places.
+    /// </summary>
     public sealed class PlaceWithoutParentsEventsSpecification : EventsSpecification
     {
         private readonly HierarchyNode<string> _place;
@@ -136,6 +143,35 @@ namespace EdlinSoftware.Timeline.Storage
             }
 
             return query.Where(e => e.Place.Left >= _place.Left && e.Place.Right <= _place.Right);
+        }
+    }
+
+    /// <summary>
+    /// Specification for events in given place.
+    /// It includes "parent" places.
+    /// </summary>
+    public sealed class PlaceWithParentsEventsSpecification : EventsSpecification
+    {
+        private readonly HierarchyNode<string> _place;
+
+        public PlaceWithParentsEventsSpecification(HierarchyNode<string> place)
+        {
+            _place = place ?? throw new ArgumentNullException(nameof(place));
+        }
+
+        public override IQueryable<Event> AugmentQuery(IQueryable<Event> query)
+        {
+            if (query is null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Where(e => 
+                // self and children
+                (e.Place.Left >= _place.Left && e.Place.Right <= _place.Right) || 
+                // parents
+                (e.Place.Left < _place.Left && e.Place.Right > _place.Right)
+            );
         }
     }
 }
