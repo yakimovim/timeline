@@ -113,6 +113,29 @@ namespace EdlinSoftware.Timeline.Storage
                     throw new InvalidOperationException($"Unknown null date part for end date for event {eventInfo.Id}");
             }
         }
+
+        public async Task RemoveEventsAsync(IReadOnlyList<Event<string, string>> events)
+        {
+            var storedEvents = events.Where(e => e.Id.HasValue).ToArray();
+
+            foreach (var @event in storedEvents)
+            {
+                var storedEvent = new Event { Id = @event.Id.Value };
+
+                var trackedEvent = _db.ChangeTracker.Entries<Event>().FirstOrDefault(e => e.Entity.Id == @event.Id.Value);
+                if (trackedEvent != null)
+                {
+                    trackedEvent.State = EntityState.Detached;
+                }
+
+                _db.Events.Remove(storedEvent);
+
+                @event.Id = null;
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
         public async Task SaveEventsAsync(IReadOnlyList<Event<string, string>> events)
         {
             var newEvents = new LinkedList<(Event StorageEvent, Event<string, string> DomainEvent)>();

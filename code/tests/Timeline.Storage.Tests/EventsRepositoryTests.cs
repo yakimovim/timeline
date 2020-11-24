@@ -228,6 +228,89 @@ namespace Timeline.Storage.Tests
         }
 
         [Fact]
+        public async Task Remove_events()
+        {
+            // Arrange
+
+            _db.Events.RemoveRange(_db.Events);
+
+            await _db.SaveChangesAsync();
+
+            var events = new[]
+                {
+                    new Event<string, string>("A", SpecificDate.BeforeChrist(10), SpecificDate.AnnoDomini(12)),
+                    new Event<string, string>("B", SpecificDate.BeforeChrist(20, 5)),
+                    new Event<string, string>("C", SpecificDate.AnnoDomini(2020, 1, 1), NowDate.Instance),
+                    new Event<string, string>("D", NowDate.Instance),
+                    new Event<string, string>("E", SpecificDate.BeforeChrist(100, 2, 3, 10), SpecificDate.BeforeChrist(100, 2, 3, 20)),
+                };
+
+            await _repo.SaveEventsAsync(events);
+
+            // Act
+
+            await _repo.RemoveEventsAsync(new[] {
+                events[1],
+                events[3],
+                // copy of one of stored events.
+                new Event<string, string>("A", SpecificDate.BeforeChrist(10), SpecificDate.AnnoDomini(12)),
+            });
+
+            // Assert
+
+            var storedEvents = await _db.Events.ToArrayAsync();
+
+            storedEvents.ShouldNotBeNull();
+            storedEvents.Length.ShouldBe(3);
+
+            var @event = storedEvents.FirstOrDefault(e => e.Content == "A");
+            @event.ShouldNotBeNull();
+            @event.StartIsCurrent.ShouldBeFalse();
+            @event.StartDuration.ShouldNotBeNull();
+            @event.StartDuration.Value.ShouldBe(Duration.GetDurationFromChristBirth(SpecificDate.BeforeChrist(10)));
+            @event.StartNullPart.ShouldNotBeNull();
+            @event.StartNullPart.ShouldBe(NullableDateParts.Month);
+            @event.EndIsCurrent.ShouldNotBeNull();
+            @event.EndIsCurrent.Value.ShouldBeFalse();
+            @event.EndDuration.ShouldNotBeNull();
+            @event.EndDuration.Value.ShouldBe(Duration.GetDurationFromChristBirth(SpecificDate.AnnoDomini(12)));
+            @event.EndNullPart.ShouldNotBeNull();
+            @event.EndNullPart.Value.ShouldBe(NullableDateParts.Month);
+
+            @event = storedEvents.FirstOrDefault(e => e.Content == "C");
+            @event.ShouldNotBeNull();
+            @event.StartIsCurrent.ShouldBeFalse();
+            @event.StartDuration.ShouldNotBeNull();
+            @event.StartDuration.Value.ShouldBe(Duration.GetDurationFromChristBirth(SpecificDate.AnnoDomini(2020, 1, 1)));
+            @event.StartNullPart.ShouldNotBeNull();
+            @event.StartNullPart.ShouldBe(NullableDateParts.Hour);
+            @event.EndIsCurrent.ShouldNotBeNull();
+            @event.EndIsCurrent.Value.ShouldBeTrue();
+            @event.EndDuration.ShouldBeNull();
+            @event.EndNullPart.ShouldBeNull();
+
+            @event = storedEvents.FirstOrDefault(e => e.Content == "E");
+            @event.ShouldNotBeNull();
+            @event.StartIsCurrent.ShouldBeFalse();
+            @event.StartDuration.ShouldNotBeNull();
+            @event.StartDuration.Value.ShouldBe(Duration.GetDurationFromChristBirth(SpecificDate.BeforeChrist(100, 2, 3, 10)));
+            @event.StartNullPart.ShouldNotBeNull();
+            @event.StartNullPart.ShouldBe(NullableDateParts.Nothing);
+            @event.EndIsCurrent.ShouldNotBeNull();
+            @event.EndIsCurrent.Value.ShouldBeFalse();
+            @event.EndDuration.ShouldNotBeNull();
+            @event.EndDuration.Value.ShouldBe(Duration.GetDurationFromChristBirth(SpecificDate.BeforeChrist(100, 2, 3, 20)));
+            @event.EndNullPart.ShouldNotBeNull();
+            @event.EndNullPart.Value.ShouldBe(NullableDateParts.Nothing);
+
+            events[0].Id.ShouldNotBeNull();
+            events[1].Id.ShouldBeNull();
+            events[2].Id.ShouldNotBeNull();
+            events[3].Id.ShouldBeNull();
+            events[4].Id.ShouldNotBeNull();
+        }
+
+        [Fact]
         public async Task Get_all_events()
         {
             // Arrange
