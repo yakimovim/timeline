@@ -7,6 +7,8 @@ using Xunit;
 
 namespace Timeline.Storage.Tests
 {
+    using static EventsSpecification;
+
     public class PlaceWithParentsEventsSpecificationTests
         : IClassFixture<PlaceWithParentsEventsSpecificationTestsFixture>
     {
@@ -24,7 +26,7 @@ namespace Timeline.Storage.Tests
             // Act
 
             var eventsInPlace = await _fixture.EventsRepo.GetEventsAsync(
-                new PlaceWithParentsEventsSpecification(
+                InPlaceWithParents(
                     _fixture.Hierarchy.GetNodeById("mars")
                 )
             );
@@ -43,7 +45,7 @@ namespace Timeline.Storage.Tests
             // Act
 
             var eventsInPlace = await _fixture.EventsRepo.GetEventsAsync(
-                new PlaceWithParentsEventsSpecification(
+                InPlaceWithParents(
                     _fixture.Hierarchy.GetNodeById("solar_system")
                 )
             );

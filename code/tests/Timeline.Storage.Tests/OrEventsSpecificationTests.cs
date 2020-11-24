@@ -10,44 +10,30 @@ namespace Timeline.Storage.Tests
 {
     using static EventsSpecification;
 
-    public class TimeRangeEventsSpecificationTests
-        : IClassFixture<TimeRangeEventsSpecificationTestsFixture>
+    public class OrEventsSpecificationTests
+        : IClassFixture<OrEventsSpecificationTestsFixture>
     {
-        private readonly TimeRangeEventsSpecificationTestsFixture _fixture;
+        private readonly OrEventsSpecificationTestsFixture _fixture;
 
-        public TimeRangeEventsSpecificationTests(
-            TimeRangeEventsSpecificationTestsFixture fixture)
+        public OrEventsSpecificationTests(
+            OrEventsSpecificationTestsFixture fixture)
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]
-        public async Task Get_events_from_time_range_with_no_events()
+        public async Task Get_events_when_there_are_events_that_meet_both_conditions()
         {
             // Act
-
-            var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
-                InRange(
-                    ExactDateInfo.AnnoDomini(3000, 1, 1, 0),
-                    ExactDateInfo.AnnoDomini(4000, 1, 1, 0)
-                )
-            );
-
-            // Assert
-
-            eventsInTimeRange.ShouldNotBeNull();
-            eventsInTimeRange.ShouldBeEmpty();
-        }
-
-        [Fact]
-        public async Task Get_events_from_time_range_with_full_events()
-        {
-            // Act
-
             var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
                 InRange(
                     ExactDateInfo.BeforeChrist(20, 1, 1, 0),
-                    ExactDateInfo.BeforeChrist(20, 12, 1, 0)
+                    ExactDateInfo.BeforeChrist(20, 10, 1, 0)
+                ).Or(
+                    InRange(
+                        ExactDateInfo.BeforeChrist(30, 1, 1, 0),
+                        ExactDateInfo.BeforeChrist(10, 1, 1, 0)
+                    )
                 )
             );
 
@@ -55,21 +41,22 @@ namespace Timeline.Storage.Tests
 
             eventsInTimeRange.ShouldNotBeNull();
             eventsInTimeRange.Count.ShouldBe(1);
-
-            var @event = eventsInTimeRange[0];
-            @event.ShouldNotBeNull();
-            @event.Description.ShouldBe("B");
+            eventsInTimeRange[0].Description.ShouldBe("B");
         }
 
         [Fact]
-        public async Task Get_events_from_time_range_with_only_start_in_range()
+        public async Task Get_events_when_there_are_no_events_that_meet_both_conditions()
         {
             // Act
-
             var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
                 InRange(
                     ExactDateInfo.BeforeChrist(20, 1, 1, 0),
-                    ExactDateInfo.AnnoDomini(1, 1, 1, 0)
+                    ExactDateInfo.BeforeChrist(20, 10, 1, 0)
+                ).Or(
+                    InRange(
+                        ExactDateInfo.BeforeChrist(100, 2, 3, 1),
+                        ExactDateInfo.BeforeChrist(100, 2, 3, 21)
+                    )
                 )
             );
 
@@ -77,49 +64,17 @@ namespace Timeline.Storage.Tests
 
             eventsInTimeRange.ShouldNotBeNull();
             eventsInTimeRange.Count.ShouldBe(2);
-
-            eventsInTimeRange.ShouldContain(e => e.Description == "A");
             eventsInTimeRange.ShouldContain(e => e.Description == "B");
-        }
-
-        [Fact]
-        public async Task Get_events_from_time_range_with_only_end_in_range()
-        {
-            // Act
-
-            var now = DateTime.Now;
-
-            var rangeEnd = new ExactDateInfo(
-                Era.AnnoDomini,
-                now.Year + 1,
-                1,
-                1,
-                1
-            );
-
-            var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
-                InRange(
-                    ExactDateInfo.AnnoDomini(2020, 2, 1, 0),
-                    rangeEnd
-                )
-            );
-
-            // Assert
-
-            eventsInTimeRange.ShouldNotBeNull();
-            eventsInTimeRange.Count.ShouldBe(2);
-
-            eventsInTimeRange.ShouldContain(e => e.Description == "C");
-            eventsInTimeRange.ShouldContain(e => e.Description == "D");
+            eventsInTimeRange.ShouldContain(e => e.Description == "E");
         }
     }
 
-    public class TimeRangeEventsSpecificationTestsFixture : IAsyncLifetime
+    public class OrEventsSpecificationTestsFixture : IAsyncLifetime
     {
         public readonly TimelineContext Db;
         public readonly EventsRepository EventsRepo;
 
-        public TimeRangeEventsSpecificationTestsFixture()
+        public OrEventsSpecificationTestsFixture()
         {
             Db = TimelineContextProvider.GetDbContext();
 

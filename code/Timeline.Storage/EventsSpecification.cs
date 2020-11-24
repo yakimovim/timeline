@@ -14,6 +14,51 @@ namespace EdlinSoftware.Timeline.Storage
         /// Returns filter expression.
         /// </summary>
         public abstract Expression<Func<Event, bool>> GetFilterExpression();
+
+        /// <summary>
+        /// Return time range specification.
+        /// </summary>
+        /// <param name="timeRange">Time range.</param>
+        public static EventsSpecification InRange(TimeRange timeRange)
+            => new TimeRangeEventsSpecification(timeRange);
+
+        /// <summary>
+        /// Return time range specification.
+        /// </summary>
+        /// <param name="rangeStart">Start of time range.</param>
+        /// <param name="rangeEnd">End of time range.</param>
+        public static EventsSpecification InRange(ExactDateInfo rangeStart, ExactDateInfo rangeEnd)
+            => new TimeRangeEventsSpecification(new TimeRange(rangeStart, rangeEnd));
+
+        /// <summary>
+        /// Returns place specification without parents.
+        /// </summary>
+        /// <param name="place">Place.</param>
+        public static EventsSpecification InPlace(HierarchyNode<string> place)
+            => new PlaceWithoutParentsEventsSpecification(place);
+
+        /// <summary>
+        /// Returns place specification with parents.
+        /// </summary>
+        /// <param name="place">Place.</param>
+        public static EventsSpecification InPlaceWithParents(HierarchyNode<string> place)
+            => new PlaceWithParentsEventsSpecification(place);
+
+        /// <summary>
+        /// Combines this specification with another one
+        /// using AND operator.
+        /// </summary>
+        /// <param name="anotherSpec">Another specification.</param>
+        public EventsSpecification And(EventsSpecification anotherSpec)
+            => new AndEventsSpecification(this, anotherSpec);
+
+        /// <summary>
+        /// Combines this specification with another one
+        /// using OR operator.
+        /// </summary>
+        /// <param name="anotherSpec">Another specification.</param>
+        public EventsSpecification Or(EventsSpecification anotherSpec)
+            => new OrEventsSpecification(this, anotherSpec);
     }
 
     internal class ParameterReplacer : ExpressionVisitor
@@ -65,7 +110,46 @@ namespace EdlinSoftware.Timeline.Storage
                 var parameter = Expression.Parameter(typeof(Event));
 
                 result = Expression.Lambda<Func<Event, bool>>(
-                    Expression.And(
+                    Expression.AndAlso(
+                        parameterReplacer.ReplaceParameterWith(parameter, result.Body),
+                        parameterReplacer.ReplaceParameterWith(parameter, filterExpression.Body)
+                    ),
+                    parameter);
+            }
+
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Applies several specifications combined with OR logical operator.
+    /// </summary>
+    public sealed class OrEventsSpecification : EventsSpecification
+    {
+        private readonly EventsSpecification[] _specifications;
+
+        public OrEventsSpecification(params EventsSpecification[] specifications)
+        {
+            _specifications = specifications;
+        }
+
+        /// <inheritdoc />
+        public override Expression<Func<Event, bool>> GetFilterExpression()
+        {
+            if (_specifications.Length == 0) return (e => true);
+
+            Expression<Func<Event, bool>> result = _specifications[0].GetFilterExpression();
+
+            var parameterReplacer = new ParameterReplacer();
+
+            foreach (var specification in _specifications.Skip(1))
+            {
+                var filterExpression = specification.GetFilterExpression();
+
+                var parameter = Expression.Parameter(typeof(Event));
+
+                result = Expression.Lambda<Func<Event, bool>>(
+                    Expression.OrElse(
                         parameterReplacer.ReplaceParameterWith(parameter, result.Body),
                         parameterReplacer.ReplaceParameterWith(parameter, filterExpression.Body)
                     ),

@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Timeline.Storage.Tests
 {
+    using static EventsSpecification;
+
     public class AndEventsSpecificationTests
         : IClassFixture<AndEventsSpecificationTestsFixture>
     {
@@ -24,18 +26,13 @@ namespace Timeline.Storage.Tests
         {
             // Act
             var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
-                new AndEventsSpecification(
-                    new TimeRangeEventsSpecification(
-                        new TimeRange(
-                            ExactDateInfo.BeforeChrist(20, 1, 1, 0),
-                            ExactDateInfo.BeforeChrist(20, 10, 1, 0)
-                        )
-                    ),
-                    new TimeRangeEventsSpecification(
-                        new TimeRange(
+                InRange(
+                    ExactDateInfo.BeforeChrist(20, 1, 1, 0),
+                    ExactDateInfo.BeforeChrist(20, 10, 1, 0)
+                ).And(
+                    InRange(
                             ExactDateInfo.BeforeChrist(30, 1, 1, 0),
                             ExactDateInfo.BeforeChrist(10, 1, 1, 0)
-                        )
                     )
                 )
             );
@@ -52,18 +49,13 @@ namespace Timeline.Storage.Tests
         {
             // Act
             var eventsInTimeRange = await _fixture.EventsRepo.GetEventsAsync(
-                new AndEventsSpecification(
-                    new TimeRangeEventsSpecification(
-                        new TimeRange(
-                            ExactDateInfo.BeforeChrist(20, 1, 1, 0),
-                            ExactDateInfo.BeforeChrist(20, 10, 1, 0)
-                        )
-                    ),
-                    new TimeRangeEventsSpecification(
-                        new TimeRange(
-                            ExactDateInfo.BeforeChrist(100, 2, 3, 1),
-                            ExactDateInfo.BeforeChrist(100, 2, 3, 21)
-                        )
+                InRange(
+                    ExactDateInfo.BeforeChrist(20, 1, 1, 0),
+                    ExactDateInfo.BeforeChrist(20, 10, 1, 0)
+                ).And(
+                    InRange(
+                        ExactDateInfo.BeforeChrist(100, 2, 3, 1),
+                        ExactDateInfo.BeforeChrist(100, 2, 3, 21)
                     )
                 )
             );
