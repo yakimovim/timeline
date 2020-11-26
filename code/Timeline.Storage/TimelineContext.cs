@@ -17,6 +17,16 @@ namespace EdlinSoftware.Timeline.Storage
         /// </summary>
         public DbSet<Event> Events { get; set; }
 
+        /// <summary>
+        /// Events sets.
+        /// </summary>
+        public DbSet<EventsSet> EventSets { get; set; }
+
+        /// <summary>
+        /// Connection between events and sets.
+        /// </summary>
+        public DbSet<EventInSet> EventsInSets { get; set; }
+
         public TimelineContext(DbContextOptions<TimelineContext> options)
             : base(options)
         { }
@@ -29,6 +39,9 @@ namespace EdlinSoftware.Timeline.Storage
                 .HasOne(e => e.Place)
                 .WithMany()
                 .HasForeignKey(e => e.PlaceId);
+
+            modelBuilder.Entity<EventInSet>()
+                .HasKey(e => new { e.EventId, e.SetId });
         }
     }
 }

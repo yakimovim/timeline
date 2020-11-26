@@ -44,6 +44,15 @@ namespace EdlinSoftware.Timeline.Storage
         public static EventsSpecification InPlaceWithParents(HierarchyNode<string> place)
             => new PlaceWithParentsEventsSpecification(place);
 
+
+        /// <summary>
+        /// Returns ids specification.
+        /// </summary>
+        /// <param name="ids">Ids of events.</param>
+        public static EventsSpecification Ids(params int[] ids)
+            => new IdsEventsSpecification(ids);
+
+
         /// <summary>
         /// Combines this specification with another one
         /// using AND operator.
@@ -272,6 +281,25 @@ namespace EdlinSoftware.Timeline.Storage
                 // parents
                 (e.Place.Left < _place.Left && e.Place.Right > _place.Right)
             );
+        }
+    }
+
+    /// <summary>
+    /// Specification for events with given ids.
+    /// </summary>
+    public sealed class IdsEventsSpecification : EventsSpecification
+    {
+        private readonly HierarchyNode<string> _place;
+        private readonly int[] _ids;
+
+        public IdsEventsSpecification(params int[] ids)
+        {
+            _ids = ids;
+        }
+
+        public override Expression<Func<Event, bool>> GetFilterExpression()
+        {
+            return (e => _ids.Contains(e.Id));
         }
     }
 }

@@ -136,7 +136,7 @@ namespace EdlinSoftware.Timeline.Storage
             await _db.SaveChangesAsync();
         }
 
-        public async Task SaveEventsAsync(IReadOnlyList<Event<string, string>> events)
+        public async Task SaveEventsAsync(IReadOnlyCollection<Event<string, string>> events)
         {
             var newEvents = new LinkedList<(Event StorageEvent, Event<string, string> DomainEvent)>();
 
