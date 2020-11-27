@@ -55,63 +55,106 @@ namespace EdlinSoftware.Timeline.Storage
             return result;
         }
 
-        public async Task SaveEventsSetAsync(EventsSet<string, string> eventsSet)
+        public async Task SaveEventsSetsAsync(params EventsSet<string, string>[] eventsSets)
+        {
+            if (eventsSets is null)
+            {
+                throw new ArgumentNullException(nameof(eventsSets));
+            }
+
+            foreach (var eventsSet in eventsSets)
+            {
+                if(eventsSet is null)
+                {
+                    throw new ArgumentException("Events sets should not be null", nameof(eventsSets));
+                }
+                // Save all events in the set
+
+                var eventsRepo = new EventsRepository(_db);
+
+                await eventsRepo.SaveEventsAsync(eventsSet.Events);
+
+                // Save events set
+
+                EventsSet eventsSetForStorage;
+
+                if (eventsSet.Id.HasValue)
+                {
+                    var trackedEventsSet = _db.ChangeTracker.Entries<EventsSet>().FirstOrDefault(e => e.Entity.Id == eventsSet.Id.Value);
+                    if (trackedEventsSet != null)
+                    {
+                        trackedEventsSet.State = EntityState.Detached;
+                    }
+
+                    eventsSetForStorage = new EventsSet
+                    {
+                        Id = eventsSet.Id.Value,
+                        Name = eventsSet.Name
+                    };
+                    _db.Entry(eventsSetForStorage).State = EntityState.Modified;
+                }
+                else
+                {
+                    eventsSetForStorage = new EventsSet
+                    {
+                        Name = eventsSet.Name
+                    };
+                    _db.Entry(eventsSetForStorage).State = EntityState.Added;
+                }
+
+                await _db.SaveChangesAsync();
+
+                eventsSet.Id = eventsSetForStorage.Id;
+
+                // Save events correspondence
+
+                _db.RemoveRange(_db.EventsInSets.Where(i => i.SetId == eventsSetForStorage.Id));
+
+                foreach (var @event in eventsSet.Events)
+                {
+                    _db.EventsInSets.Add(new EventInSet
+                    {
+                        SetId = eventsSetForStorage.Id,
+                        EventId = @event.Id.Value
+                    });
+                }
+
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveEventsSetAsync(EventsSet<string, string> eventsSet)
         {
             if (eventsSet is null)
             {
                 throw new ArgumentNullException(nameof(eventsSet));
             }
 
-            // Save all events in the set
+            if (!eventsSet.Id.HasValue) return;
 
-            var eventsRepo = new EventsRepository(_db);
+            await RemoveEventsSetAsync(eventsSet.Id.Value);
 
-            await eventsRepo.SaveEventsAsync(eventsSet.Events);
+            eventsSet.Id = null;
+        }
 
-            // Save events set
+        public async Task RemoveEventsSetAsync(int eventsSetId)
+        {
+            var trackedEventsSet = _db.ChangeTracker.Entries<EventsSet>()
+                .FirstOrDefault(s => s.Entity.Id == eventsSetId);
 
-            EventsSet eventsSetForStorage;
-
-            if (eventsSet.Id.HasValue)
+            if(trackedEventsSet != null)
             {
-                var trackedEventsSet = _db.ChangeTracker.Entries<EventsSet>().FirstOrDefault(e => e.Entity.Id == eventsSet.Id.Value);
-                if(trackedEventsSet != null)
-                {
-                    trackedEventsSet.State = EntityState.Detached;
-                }
-
-                eventsSetForStorage = new EventsSet
-                {
-                    Id = eventsSet.Id.Value,
-                    Name = eventsSet.Name
-                };
-                _db.Entry(eventsSetForStorage).State = EntityState.Modified;
-            }
-            else
-            {
-                eventsSetForStorage = new EventsSet
-                {
-                    Name = eventsSet.Name
-                };
-                _db.Entry(eventsSetForStorage).State = EntityState.Added;
+                trackedEventsSet.State = EntityState.Detached;
             }
 
-            await _db.SaveChangesAsync();
-
-            eventsSet.Id = eventsSetForStorage.Id;
-
-            // Save events correspondence
-
-            _db.RemoveRange(_db.EventsInSets.Where(i => i.SetId == eventsSetForStorage.Id));
-
-            foreach (var @event in eventsSet.Events)
+            var storedEventsSet = new EventsSet
             {
-                _db.EventsInSets.Add(new EventInSet
-                {
-                    SetId = eventsSetForStorage.Id,
-                    EventId = @event.Id.Value
-                });
-            }
+                Id = eventsSetId
+            };
+
+            _db.EventsInSets.RemoveRange(_db.EventsInSets.Where(i => i.SetId == eventsSetId));
+
+            _db.EventSets.Remove(storedEventsSet);
 
             await _db.SaveChangesAsync();
         }
