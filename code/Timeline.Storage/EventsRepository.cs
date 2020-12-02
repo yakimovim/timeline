@@ -8,7 +8,7 @@ using System.Linq;
 namespace EdlinSoftware.Timeline.Storage
 {
     /// <summary>
-    /// Represents repository of <see cref="Event{String}"/>
+    /// Represents repository of <see cref="Event{String, String}"/>
     /// </summary>
     public class EventsRepository
     {

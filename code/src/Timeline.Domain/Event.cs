@@ -8,6 +8,7 @@ namespace EdlinSoftware.Timeline.Domain
     /// </summary>
     /// <typeparam name="TDescription">Type of event description.</typeparam>
     /// <typeparam name="TPlace">Type of event place.</typeparam>
+    [DebuggerDisplay("{" + nameof(Description) + "}")]
     public class Event<TDescription, TPlace>
     {
         private TDescription _description;

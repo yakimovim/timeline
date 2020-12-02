@@ -36,6 +36,8 @@ namespace EdlinSoftware.Timeline.Domain
             yield return Id;
         }
 
+        public override string ToString() => Id;
+
         public static implicit operator string(StringId id)
         {
             return id.Id;

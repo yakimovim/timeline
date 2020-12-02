@@ -86,6 +86,42 @@ namespace EdlinSoftware.Timeline.Domain
             return true;
         }
 
+        /// <summary>
+        /// Removes node with given id with all subnodes.
+        /// </summary>
+        /// <param name="id">Node id.</param>
+        /// <returns>True, if node was removed. False, otherwise.</returns>
+        public bool RemoveNode(StringId id)
+        {
+            if (id is null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            var result = false;
+
+            foreach (var topNode in _topNodes)
+            {
+                if(topNode.Id == id)
+                {
+                    _topNodes.Remove(topNode);
+                    result = true;
+                    break;
+                }
+
+                result = topNode.RemoveSubNode(id);
+                
+                if (result) break;
+            }
+
+            if(result)
+            {
+                RenumerateNodes();
+            }
+
+            return result;
+        }
+
         public IDisposable PosponeRenumeration()
         {
             _postponeRenumeration = true;
@@ -122,6 +158,7 @@ namespace EdlinSoftware.Timeline.Domain
     /// Represents one node in the hierarchy.
     /// </summary>
     /// <typeparam name="T">Type of the content.</typeparam>
+    [DebuggerDisplay("{" + nameof(Id) + "}")]
     public sealed class HierarchyNode<T> : IEnumerable<HierarchyNode<T>>
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -236,5 +273,36 @@ namespace EdlinSoftware.Timeline.Domain
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
+
+        /// <summary>
+        /// Removes subnode of this node.
+        /// </summary>
+        /// <param name="id">Id of subnode.</param>
+        /// <returns>True, if subnode was removed. False, if it was not found.</returns>
+        public bool RemoveSubNode(StringId id)
+        {
+            if (id is null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            var result = false;
+
+            foreach (var subNode in _subNodes)
+            {
+                if (subNode.Id == id)
+                {
+                    _subNodes.Remove(subNode);
+                    result = true;
+                    break;
+                }
+
+                result = subNode.RemoveSubNode(id);
+
+                if (result) break;
+            }
+
+            return result;
+        }
     }
 }

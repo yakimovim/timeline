@@ -108,5 +108,102 @@ namespace EdlinSoftware.Timeline.Domain.Tests
             hierarchy.GetNodeById(nodeIdPrefix + "_2").Right.ShouldBe(4);
             hierarchy.GetNodeById(nodeIdPrefix + "_1").Right.ShouldBe(5);
         }
+
+        [Fact]
+        public void Remove_top_node()
+        {
+            // Arrange
+
+            var hierarchy = new Hierarchy<string>();
+            hierarchy.AddTopNode("universe", "Universe");
+            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
+            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
+            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+
+            // Act
+
+            hierarchy.RemoveNode("universe").ShouldBeTrue();
+
+            // Assert
+
+            hierarchy.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void Remove_sub_node()
+        {
+            // Arrange
+
+            var hierarchy = new Hierarchy<string>();
+            hierarchy.AddTopNode("universe", "Universe");
+            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
+            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
+            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+
+            // Act
+
+            hierarchy.RemoveNode("solar_system").ShouldBeTrue();
+
+            // Assert
+
+            hierarchy.Count().ShouldBe(1);
+            hierarchy.ContainsNodeWithId("universe").ShouldBeTrue();
+            hierarchy.GetNodeById("universe").Left.ShouldBe(0);
+            hierarchy.GetNodeById("universe").Right.ShouldBe(1);
+        }
+
+        [Fact]
+        public void Remove_leaf_node()
+        {
+            // Arrange
+
+            var hierarchy = new Hierarchy<string>();
+            hierarchy.AddTopNode("universe", "Universe");
+            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
+            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
+            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+
+            // Act
+
+            hierarchy.RemoveNode("mars").ShouldBeTrue();
+
+            // Assert
+
+            hierarchy.Count().ShouldBe(3);
+            hierarchy.ContainsNodeWithId("universe").ShouldBeTrue();
+            hierarchy.ContainsNodeWithId("solar_system").ShouldBeTrue();
+            hierarchy.ContainsNodeWithId("earth").ShouldBeTrue();
+
+            hierarchy.GetNodeById("universe").Left.ShouldBe(0);
+            hierarchy.GetNodeById("solar_system").Left.ShouldBe(1);
+            hierarchy.GetNodeById("earth").Left.ShouldBe(2);
+            hierarchy.GetNodeById("earth").Right.ShouldBe(3);
+            hierarchy.GetNodeById("solar_system").Right.ShouldBe(4);
+            hierarchy.GetNodeById("universe").Right.ShouldBe(5);
+        }
+
+        [Fact]
+        public void Remove_absent_node()
+        {
+            // Arrange
+
+            var hierarchy = new Hierarchy<string>();
+            hierarchy.AddTopNode("universe", "Universe");
+            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
+            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
+            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+
+            // Act
+
+            hierarchy.RemoveNode("aaa").ShouldBeFalse();
+
+            // Assert
+
+            hierarchy.Count().ShouldBe(4);
+            hierarchy.ContainsNodeWithId("universe").ShouldBeTrue();
+            hierarchy.ContainsNodeWithId("solar_system").ShouldBeTrue();
+            hierarchy.ContainsNodeWithId("earth").ShouldBeTrue();
+            hierarchy.ContainsNodeWithId("mars").ShouldBeTrue();
+        }
     }
 }

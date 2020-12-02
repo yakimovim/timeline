@@ -1,5 +1,6 @@
 ﻿using EdlinSoftware.Timeline.Storage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 
@@ -11,6 +12,9 @@ namespace Timeline.Storage.Tests.TestFramework
         {
             var optionsBuilder = new DbContextOptionsBuilder<TimelineContext>();
 
+            optionsBuilder.ConfigureWarnings(builder => {
+                builder.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning);
+            });
             optionsBuilder.UseInMemoryDatabase("TimelineInMemory", new InMemoryDatabaseRoot());
 
             var options = optionsBuilder.Options;

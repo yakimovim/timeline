@@ -44,6 +44,13 @@ namespace EdlinSoftware.Timeline.Storage
         public static EventsSpecification InPlaceWithParents(HierarchyNode<string> place)
             => new PlaceWithParentsEventsSpecification(place);
 
+        /// <summary>
+        /// Returns exact place specification.
+        /// </summary>
+        /// <param name="place">Place.</param>
+        public static EventsSpecification InExactPlace(HierarchyNode<string> place)
+            => new ExactPlaceEventsSpecification(place);
+
 
         /// <summary>
         /// Returns ids specification.
@@ -68,6 +75,13 @@ namespace EdlinSoftware.Timeline.Storage
         /// <param name="anotherSpec">Another specification.</param>
         public EventsSpecification Or(EventsSpecification anotherSpec)
             => new OrEventsSpecification(this, anotherSpec);
+
+        /// <summary>
+        /// Reverts specification.
+        /// </summary>
+        /// <param name="spec">Specification.</param>
+        public static EventsSpecification Not(EventsSpecification spec)
+            => new NotEventsSpecification(spec);
     }
 
     internal class ParameterReplacer : ExpressionVisitor
@@ -164,6 +178,37 @@ namespace EdlinSoftware.Timeline.Storage
                     ),
                     parameter);
             }
+
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Reverts result of a single specification.
+    /// </summary>
+    public sealed class NotEventsSpecification : EventsSpecification
+    {
+        private readonly EventsSpecification _specification;
+
+        public NotEventsSpecification(EventsSpecification specification)
+        {
+            _specification = specification ?? throw new ArgumentNullException(nameof(specification));
+        }
+
+        /// <inheritdoc />
+        public override Expression<Func<Event, bool>> GetFilterExpression()
+        {
+            var parameterReplacer = new ParameterReplacer();
+
+            var filterExpression = _specification.GetFilterExpression();
+
+            var parameter = Expression.Parameter(typeof(Event));
+
+            var result = Expression.Lambda<Func<Event, bool>>(
+                Expression.Not(
+                    parameterReplacer.ReplaceParameterWith(parameter, filterExpression.Body)
+                ),
+                parameter);
 
             return result;
         }
@@ -281,6 +326,24 @@ namespace EdlinSoftware.Timeline.Storage
                 // parents
                 (e.Place.Left < _place.Left && e.Place.Right > _place.Right)
             );
+        }
+    }
+
+    /// <summary>
+    /// Specification for events in specific place.
+    /// </summary>
+    public sealed class ExactPlaceEventsSpecification : EventsSpecification
+    {
+        private readonly StringId _placeId;
+
+        public ExactPlaceEventsSpecification(HierarchyNode<string> place)
+        {
+            _placeId = place?.Id ?? throw new ArgumentNullException(nameof(place));
+        }
+
+        public override Expression<Func<Event, bool>> GetFilterExpression()
+        {
+            return (e => e.Place.Id == _placeId.Id);
         }
     }
 

@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace EdlinSoftware.Timeline.Storage
 {
     /// <summary>
     /// Model of hierarchy node with string content for storage.
     /// </summary>
+    [DebuggerDisplay("{" + nameof(Id) + "}: {" + nameof(Content) + "}")]
     public abstract class StringHierarchyNode
     {
         [Key]

@@ -11,34 +11,25 @@ namespace Timeline.Storage.Tests
 {
     public class PlacesRepositoryTests
     {
-        private readonly TimelineContext _db;
-        private readonly PlacesRepository _repo;
+        private readonly PlacesRepositoryTestsFixture _fixture;
 
         public PlacesRepositoryTests()
         {
-            _db = TimelineContextProvider.GetDbContext();
-
-            _repo = new PlacesRepository(_db);
+            _fixture = new PlacesRepositoryTestsFixture();
         }
 
         [Fact]
         public async Task Save_places_hierarchy()
         {
-            // Arrange
-
-            var hierarchy = new Hierarchy<string>();
-            hierarchy.AddTopNode("universe", "Universe");
-            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
-            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
-            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
-
             // Act
 
-            await _repo.SavePlacesAsync(hierarchy);
+            var result = await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
 
             // Assert
 
-            var places = await _db.Places.ToArrayAsync();
+            result.IsSuccess.ShouldBeTrue();
+
+            var places = await _fixture.Db.Places.ToArrayAsync();
 
             places.ShouldNotBeNull();
             places.Length.ShouldBe(4);
@@ -65,17 +56,11 @@ namespace Timeline.Storage.Tests
         {
             // Arrange
 
-            var hierarchy = new Hierarchy<string>();
-            hierarchy.AddTopNode("universe", "Universe");
-            hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
-            hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
-            hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
 
             // Act
 
-            await _repo.SavePlacesAsync(hierarchy);
-
-            var restoredHierarchy = await _repo.GetPlacesAsync();
+            var restoredHierarchy = await _fixture.Repo.GetPlacesAsync();
 
             // Assert
 
@@ -105,6 +90,211 @@ namespace Timeline.Storage.Tests
             restoredHierarchy.TopNodes[0]
                 .SubNodes[0]
                 .SubNodes[1].Content.ShouldBe("Mars");
+        }
+
+        [Fact]
+        public async Task Cant_silently_remove_some_places()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var newPlaces = new Hierarchy<string>();
+            newPlaces.AddTopNode("universe", "Universe");
+
+            // Act
+
+            var result = await _fixture.Repo.SavePlacesAsync(newPlaces);
+
+            // Assert
+
+            result.IsFailure.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task Change_existing_place_id()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var places = await _fixture.Repo.GetPlacesAsync();
+
+            var @event = new Event<string, string>("A", NowDate.Instance)
+            {
+                Place = places.GetNodeById("universe")
+            };
+
+            var eventsRepo = new EventsRepository(_fixture.Db);
+
+            await eventsRepo.SaveEventsAsync(new[] { @event });
+
+            // Act
+
+            await _fixture.Repo.ChangePlaceId("universe", "big_universe");
+
+            // Assert
+
+            places = await _fixture.Repo.GetPlacesAsync();
+
+            places.ContainsNodeWithId("universe").ShouldBeFalse();
+            places.ContainsNodeWithId("big_universe").ShouldBeTrue();
+
+            @event = (await eventsRepo.GetEventsAsync()).Single();
+
+            @event.Place.Id.ShouldBe<StringId>("big_universe");
+        }
+
+        [Fact]
+        public async Task Change_unknown_place_id()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var places = await _fixture.Repo.GetPlacesAsync();
+
+            var @event = new Event<string, string>("A", NowDate.Instance)
+            {
+                Place = places.GetNodeById("universe")
+            };
+
+            var eventsRepo = new EventsRepository(_fixture.Db);
+
+            await eventsRepo.SaveEventsAsync(new[] { @event });
+
+            // Act
+
+            await _fixture.Repo.ChangePlaceId("unknown", "big_universe");
+
+            // Assert
+
+            places = await _fixture.Repo.GetPlacesAsync();
+
+            places.ContainsNodeWithId("unknown").ShouldBeFalse();
+            places.ContainsNodeWithId("big_universe").ShouldBeFalse();
+
+            @event = (await eventsRepo.GetEventsAsync()).Single();
+
+            @event.Place.Id.ShouldBe<StringId>("universe");
+        }
+
+        [Fact]
+        public async Task Remove_existing_place()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var events = new[]
+            {
+                new Event<string, string>("A", NowDate.Instance),
+                new Event<string, string>("B", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("universe")
+                },
+                new Event<string, string>("C", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("solar_system")
+                },
+                new Event<string, string>("D", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("earth")
+                },
+            };
+
+            await _fixture.EventsRepo.SaveEventsAsync(events);
+
+            // Act
+
+            await _fixture.Repo.RemovePlaceAsync("solar_system");
+
+            // Assert
+
+            var places = await _fixture.Repo.GetPlacesAsync();
+
+            places.Count().ShouldBe(1);
+            places.ContainsNodeWithId("universe").ShouldBeTrue();
+
+            var storedEvents = await _fixture.EventsRepo.GetEventsAsync();
+
+            storedEvents.Count.ShouldBe(4);
+            storedEvents.Single(e => e.Description == "A").Place.ShouldBeNull();
+            storedEvents.Single(e => e.Description == "B").Place.Id.ShouldBe<StringId>("universe");
+            storedEvents.Single(e => e.Description == "C").Place.ShouldBeNull();
+            storedEvents.Single(e => e.Description == "D").Place.ShouldBeNull();
+        }
+
+        [Fact]
+        public async Task Remove_unknown_place()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var events = new[]
+            {
+                new Event<string, string>("A", NowDate.Instance),
+                new Event<string, string>("B", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("universe")
+                },
+                new Event<string, string>("C", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("solar_system")
+                },
+                new Event<string, string>("D", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("earth")
+                },
+            };
+
+            await _fixture.EventsRepo.SaveEventsAsync(events);
+
+            // Act
+
+            await _fixture.Repo.RemovePlaceAsync("unknown");
+
+            // Assert
+
+            var places = await _fixture.Repo.GetPlacesAsync();
+
+            places.Count().ShouldBe(4);
+            places.ContainsNodeWithId("universe").ShouldBeTrue();
+            places.ContainsNodeWithId("solar_system").ShouldBeTrue();
+            places.ContainsNodeWithId("earth").ShouldBeTrue();
+            places.ContainsNodeWithId("mars").ShouldBeTrue();
+
+            var storedEvents = await _fixture.EventsRepo.GetEventsAsync();
+
+            storedEvents.Count.ShouldBe(4);
+            storedEvents.Single(e => e.Description == "A").Place.ShouldBeNull();
+            storedEvents.Single(e => e.Description == "B").Place.Id.ShouldBe<StringId>("universe");
+            storedEvents.Single(e => e.Description == "C").Place.Id.ShouldBe<StringId>("solar_system");
+            storedEvents.Single(e => e.Description == "D").Place.Id.ShouldBe<StringId>("earth"); ;
+        }
+    }
+
+    public sealed class PlacesRepositoryTestsFixture
+    {
+        public readonly Hierarchy<string> Hierarchy;
+        public readonly TimelineContext Db;
+        public readonly PlacesRepository Repo;
+        public readonly EventsRepository EventsRepo;
+
+        public PlacesRepositoryTestsFixture()
+        {
+            Hierarchy = new Hierarchy<string>();
+            Hierarchy.AddTopNode("universe", "Universe");
+            Hierarchy.GetNodeById("universe").AddSubNode("solar_system", "Solar system");
+            Hierarchy.GetNodeById("solar_system").AddSubNode("earth", "Earth");
+            Hierarchy.GetNodeById("solar_system").AddSubNode("mars", "Mars");
+
+            Db = TimelineContextProvider.GetDbContext();
+
+            Repo = new PlacesRepository(Db);
+
+            EventsRepo = new EventsRepository(Db);
         }
     }
 }
