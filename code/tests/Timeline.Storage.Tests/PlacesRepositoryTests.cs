@@ -273,6 +273,49 @@ namespace Timeline.Storage.Tests
             storedEvents.Single(e => e.Description == "C").Place.Id.ShouldBe<StringId>("solar_system");
             storedEvents.Single(e => e.Description == "D").Place.Id.ShouldBe<StringId>("earth"); ;
         }
+
+        [Fact]
+        public async Task Saving_modified_places_hierarchy_should_not_change_event_places()
+        {
+            // Arrange
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            var events = new[]
+            {
+                new Event<string, string>("A", NowDate.Instance),
+                new Event<string, string>("B", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("universe")
+                },
+                new Event<string, string>("C", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("solar_system")
+                },
+                new Event<string, string>("D", NowDate.Instance)
+                {
+                    Place = _fixture.Hierarchy.GetNodeById("earth")
+                },
+            };
+
+            await _fixture.EventsRepo.SaveEventsAsync(events);
+
+            // Act
+
+            _fixture.Hierarchy.GetNodeById("earth").AddSubNode("africa", "Africa");
+
+            await _fixture.Repo.SavePlacesAsync(_fixture.Hierarchy);
+
+            // Assert
+
+            var storedEvents = await _fixture.EventsRepo.GetEventsAsync();
+
+            storedEvents.Count.ShouldBe(4);
+            storedEvents.Single(e => e.Description == "A").Place.ShouldBeNull();
+            storedEvents.Single(e => e.Description == "B").Place.Id.ShouldBe<StringId>("universe");
+            storedEvents.Single(e => e.Description == "C").Place.Id.ShouldBe<StringId>("solar_system");
+            storedEvents.Single(e => e.Description == "D").Place.Id.ShouldBe<StringId>("earth"); ;
+        }
     }
 
     public sealed class PlacesRepositoryTestsFixture
